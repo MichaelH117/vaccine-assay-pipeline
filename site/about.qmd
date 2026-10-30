@@ -87,7 +87,7 @@ a placeholder drawn by code until Michael approves a specific public-domain file
 ::: {.honest}
 - **SYNTHETIC data.** No real volunteer, trial, lab, company or patient. The assay ("Anti-Antigen X IgG ELISA") is
   invented.
-- **Not a validated system.** This is a portfolio demonstration of [GxP](glossary.qmd#gxp){.term}-style practice.
+- **Not a validated system.** This is a demonstration of [GxP](glossary.qmd#gxp){.term}-style practice.
   It makes no [21 CFR Part 11](glossary.qmd#part-11){.term} or [GCLP](glossary.qmd#gclp){.term} compliance claim.
   The validation pack in `docs/validation/` is a practice exercise.
 - **Demo thresholds.** QC limits in `config/qc_rules.yaml` are demo defaults, not checked against any real assay

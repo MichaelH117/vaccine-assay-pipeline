@@ -1,6 +1,6 @@
 # Case study: a vaccine-trial assay pipeline that proves its own checks
 
-**Synthetic data throughout.** A portfolio project, built by Michael Hanson with a team of AI agent seats (product,
+**Synthetic data throughout.** A demonstration project, built by Michael Hanson with a team of AI agent seats (product,
 tech lead, data, lab informatics, QA, GxP validation, DevOps, principal engineer). It is not deployed, has no users
 and is not a validated system. Short version: [EXECUTIVE_ONE_PAGER.md](EXECUTIVE_ONE_PAGER.md).
 
@@ -70,7 +70,7 @@ Roles, service levels, runbook and change control are in [OPERATING_MODEL.md](OP
 cost estimates are in [SCALE_AND_COST.md](SCALE_AND_COST.md). Risks with owners: [RISK_REGISTER.md](RISK_REGISTER.md).
 What comes next: [ROADMAP.md](ROADMAP.md).
 
-## 7. Practices shown (no titles claimed)
+## 7. Engineering practices
 Wrote a PR/FAQ spec with acceptance criteria; 7 ADRs, one superseding another; a code review with 12 findings; a
 test plan mapping every acceptance criterion; 12 logged bugs, each fixed one guarded by a test; a GAMP 5-style
 validation pack (DRAFT); a risk register; a flaw hunt with three planted bugs; a blameless postmortem; scale

@@ -129,29 +129,9 @@ gaps. Before the push, fix these (no code changes needed):
 4. SPEC.md still says "DRAFT v1, waiting for Michael". Mark it final and note that INJ-11 became a required type.
 5. Make the README fixes listed below.
 
-## Interview talking points (clinical immunology / vaccine R&D data)
-
-1. **"My QC rejected exactly the bad plates and no others."** Each plate gets its own 4PL fit. The working range
-   comes from the longest contiguous run of standards with 80-120% back-calculated recovery, and nothing outside it
-   is extrapolated. On the demo, 2 of 13 plates were rejected: PLATE-007 (FIT_FAIL + STD_RECOVERY) and PLATE-003
-   (CTRL_OOR). Both were planted faults. No plate was rejected without a planted cause, and both were repeated and
-   accepted. Proof: `docs/img/plate_status_grid.png` and `mart_plate_qc.csv`.
-2. **"Code review showed my audit trail protected the wrong thing, and I fixed it."** The hash chain caught a
-   tampered audit row (INJ-7). Review then found that a direct SQL edit of the *record* was invisible to it. I added
-   a check that compares every live row with its audited insert payload. A planted re-attribution
-   (EVT-000655, USR-04 to USR-01) is now caught as ALCOA+ Original RECORD_MISMATCH. Be honest about the limit: this is detection, not prevention, because DuckDB cannot block a
-   direct edit. Proof: ADR 007 and `alcoa_findings.csv`.
-3. **"Detection was measured, and the one false positive is shown."** 13 of 13 planted problems were caught across
-   9 types. 1 of 360 samples (0.28%) carries a flag with no planted cause, and I traced it to a side effect of INJ-7
-   rather than hiding it. The swapped-ID pair is held out of reporting (358 of 360 reportable, 2 listed as missing
-   with a reason), not reported with the wrong subject's titer. Proof: `docs/results.json` and `detection_scorecard.csv`.
-
-Do not claim: real LIMS experience, GCLP validation, ICH M10-checked thresholds, or knowledge of which assays or
-LIMS Pearl River uses (that is UNVERIFIED in the SPEC).
-
 ## README overclaim check
 
-No claims of real deployment, compliance, or years of experience. The README says "not a validated system", "makes no
+No claims of real deployment or compliance. The README says "not a validated system", "makes no
 compliance claim" and "all data is synthetic". Every headline number matches results.json: 13/13, 14/14,
 0.277% (truncated), 358/360, 80 re-assay rows, 245 passed, 145/145, 34 models, 111 tests, GMT 4,332 vs 219, CI
 3,077-6,100, seroresponse 56/58 vs 0/60, 58/60 and 30/37 identical. These issues need fixing:

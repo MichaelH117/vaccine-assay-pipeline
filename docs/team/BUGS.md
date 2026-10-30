@@ -4,8 +4,8 @@ Owner: QA seat. Opened 2026-10-30 from black-box edge testing (`tests/qa/`). Syn
 Each open bug has a `xfail(strict=True)` test that names it. When the bug is fixed, that test XPASSes, strict mode turns
 it into a failure, and the fixer removes the `xfail` mark. That way a fix can't land without its test being switched on.
 
-Severity: **High** = can abort a run or let bad data reach a result. **Medium** = a GxP/AC gap a reviewer or
-interviewer would find. **Low** = a misleading message or a demo limitation.
+Severity: **High** = can abort a run or let bad data reach a result. **Medium** = a GxP/AC gap a reviewer
+would find. **Low** = a misleading message or a demo limitation.
 
 | ID | Title | Severity | Owner seat | Test |
 |---|---|---|---|---|

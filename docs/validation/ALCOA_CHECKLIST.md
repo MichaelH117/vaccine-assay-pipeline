@@ -2,7 +2,7 @@
 
 Owner: GxP Validation Engineer seat. Version 0.2 DRAFT, 2026-10-30 (adds record reconciliation and chain checkpoints/anchor).
 
-> Portfolio demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
+> Demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
 > Status key: **In place** = code and a passing test exist now. **Pending build** = the control's code exists but the
 > evidence comes from the full-build tests, which run once DE-09 wires `run.py` and `conftest.py`.
 

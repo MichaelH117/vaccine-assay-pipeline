@@ -2,7 +2,7 @@
 
 Owner: GxP Validation Engineer seat. Version 0.2 DRAFT, 2026-10-30 (adds URS-29, URS-30 after REVIEW F1/F5, BUG-004/005). Source: docs/team/SPEC.md (US-1 to US-12).
 
-> Portfolio demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
+> Demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
 
 Each requirement has an ID (`URS-nn`), the SPEC story / acceptance criteria it comes from, and a risk rating from
 [RISK_ASSESSMENT.md](RISK_ASSESSMENT.md). "Shall" statements are testable; the test that proves each one is in

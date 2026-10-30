@@ -1,7 +1,7 @@
 # Brief: vaccine-assay-pipeline
 
 One page. Owner: Principal Engineer seat, 2026-10-30. Full product spec: [team/SPEC.md](team/SPEC.md).
-**All data is synthetic.** This is a portfolio demonstration. It is not a validated system and has no real users.
+**All data is synthetic.** This is a demonstration. It is not a validated system and has no real users.
 
 ## Who the user is
 - **Primary: the assay lab's data reviewer** in a vaccine-trial clinical immunology lab (GCLP). Every day this person

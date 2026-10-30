@@ -2,7 +2,7 @@
 
 Owner: GxP Validation Engineer / Data Integrity Lead seat. Version 0.1 DRAFT, 2026-10-29.
 
-> **This is a portfolio demonstration of GxP validation practice, not a validated system.** It runs on synthetic data
+> **This is a demonstration of GxP validation practice, not a validated system.** It runs on synthetic data
 > only. No claim of compliance with 21 CFR Part 11, EU Annex 11, GCLP, or any other regulation is made or implied.
 > The plan shows how the work *would* be approached under GAMP 5 (2nd ed.) and the FDA Computer Software Assurance
 > (CSA) guidance, scaled down to a one-person demo.

@@ -5,8 +5,7 @@ append-only audit trail, 4PL standard curves, QC and dbt marts. It refuses plate
 13 planted problems it caught.**
 
 > **All data is synthetic.** A seeded generator invents every subject, sample, plate and reading. No real trial,
-> patient, lab or company data is used, and nothing here describes how any real lab works. This is a portfolio
-> demonstration of GxP-style practice. It is **not a validated system** and makes no compliance claim.
+> patient, lab or company data is used, and nothing here describes how any real lab works. This is a demonstration of GxP-style practice. It is **not a validated system** and makes no compliance claim.
 
 ## Results at a glance
 
@@ -225,7 +224,7 @@ Dashboard spec: [DASHBOARD_SPEC.md](docs/DASHBOARD_SPEC.md).
 | Scale probe | `PYTHONPATH=. python tools/scale_probe.py 10 <out_dir>` | clean builds: 1x 14.9 s; 10x (3,600 samples) 50.9 s; 100x (36,000 samples, 573,017 audit rows) 528.2 s; dbt 137 of 137 at each (measured before the BUG-011/012 fixes added 8 tests) |
 | Lint | `python -m ruff check .` | clean; CI is set up to run ruff + pytest on every push ([ci.yml](.github/workflows/ci.yml)), but has not run on GitHub yet |
 
-## Senior-scope documents
+## Project documents
 
 | Document | What it answers |
 |---|---|

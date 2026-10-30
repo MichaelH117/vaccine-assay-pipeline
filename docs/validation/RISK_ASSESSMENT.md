@@ -2,7 +2,7 @@
 
 Owner: GxP Validation Engineer seat. Version 0.2 DRAFT, 2026-10-30 (after Tech Lead REVIEW F1/F5 and QA BUG-004/005).
 
-> Portfolio demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
+> Demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
 
 ## Method
 

@@ -5,7 +5,7 @@ QA-02, with the real pytest and `dbt test` output.
 
 ## Statement of status
 
-**This project is a portfolio demonstration of GxP validation and data-integrity practices. It is NOT a validated
+**This project is a demonstration of GxP validation and data-integrity practices. It is NOT a validated
 system and makes no claim of compliance with 21 CFR Part 11, EU GMP Annex 11, GCLP, or any other regulation.** All
 data is synthetic. The documents in this folder show how a GAMP 5 / CSA risk-based approach would be applied, scaled to
 a one-person demo.

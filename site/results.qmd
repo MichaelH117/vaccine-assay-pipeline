@@ -149,7 +149,7 @@ volTable = html`<details class="table-twin"><summary>View the dot chart as a tab
 **Honesty notes.**
 
 - All data is [SYNTHETIC](glossary.qmd#synthetic){.term} (seed 42). The trial, the assay and the thresholds are
-  invented for a portfolio demonstration.
+  invented for a demonstration.
 - Thresholds marked "demo default" in the project's METRICS are not checked against any real protocol.
 - This is **not a validated system** and makes no [GxP](glossary.qmd#gxp){.term} or
   [21 CFR Part 11](glossary.qmd#part-11){.term} compliance claim.

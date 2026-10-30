@@ -4,15 +4,15 @@
 - **What I did:** Wrote SPEC.md. It covers:
   - the PR/FAQ
   - a terms table with source URLs (4PL, LLOQ/ULOQ, GMT, GMFR, seroresponse, GCLP, ALCOA+)
-  - Pfizer Pearl River grounding
+  - public-source domain grounding
   - users and workflow
   - 12 user stories (US-1 to US-12) with testable acceptance criteria
   - 8 injected problems (INJ-1 to INJ-8)
-  - out-of-scope list, job-posting map, and 5 open decisions (D1 to D5)
+  - out-of-scope list, market evidence, and 5 open decisions (D1 to D5)
 - **Files changed:** docs/team/SPEC.md (new), docs/team/HANDOFF.md (new).
 - **Checks run:** Web searches only (6 queries). No code exists yet, so no tests.
 - **Open issues:**
-  - The 2 LinkedIn posting URLs come from TEAM.md and were not re-opened (they may be closed).
+  - The 2 market-evidence posting URLs were not re-opened (they may be closed).
   - The FDA data-integrity Q&A link was not opened: UNVERIFIED.
   - The exact ICH M10 calibration thresholds were not read from the PDF: UNVERIFIED. All thresholds live in config.
   - Decisions D1 to D5 need Michael. Defaults: DuckDB, ELISA IgG (GMT/GMC), 4-fold seroresponse, Power BI.
@@ -224,9 +224,9 @@
 - **Checks run (one process at a time):** the 3 files: 38 passed. Final `.venv\Scripts\python -m pipeline.run --test`: **pytest 238 passed, 0 failed**; **dbt 137 of 137 passed** (34 models, 103 tests); headline "13 of 13 required planted problems caught (14 of 14 affected records)"; plate FP 0, sample fp_pct 0.28; 228.8 s.
 - **Not re-run:** the byte-identical second-run check after this round (memory). The last confirmed identical run was before the fix round.
 
-## 2026-10-30: Principal Engineer / Engineering Director (senior-scope pass + showcase README)
+## 2026-10-30: Principal Engineer / Engineering Director (documentation pass + README)
 - **What I did:**
-  - Wrote the senior-scope set in `docs/`: BRIEF, RISK_REGISTER (14 risks), KNOWN_ISSUES (15), FLAW_HUNT (10 failure modes, all with evidence, none "not checked"), POSTMORTEM_2026-10-30_INJ11_harness_drift (plus BUG-007 short form), SCALE_AND_COST, OPERATING_MODEL, ROADMAP, CASE_STUDY, EXECUTIVE_ONE_PAGER, and the showcase `README.md` (results table, Mermaid pipeline diagram, before/after table, links). Left a `## Quickstart` placeholder for devops-engineer.
+  - Wrote the documentation set in `docs/`: BRIEF, RISK_REGISTER (14 risks), KNOWN_ISSUES (15), FLAW_HUNT (10 failure modes, all with evidence, none "not checked"), POSTMORTEM_2026-10-30_INJ11_harness_drift (plus BUG-007 short form), SCALE_AND_COST, OPERATING_MODEL, ROADMAP, CASE_STUDY, EXECUTIVE_ONE_PAGER, and the `README.md` (results table, Mermaid pipeline diagram, before/after table, links). Left a `## Quickstart` placeholder for devops-engineer.
   - ADR 007 (record reconciliation + anchor) now records the reversal; ADR 001 marked "partly superseded by ADR 007" (status line only).
   - 3 new infographics from recorded outputs (`tools/make_showcase_figures.py`): `docs/img/detection_scorecard.png`, `repeat_run_check.png`, `scale_profile.png`.
   - Evidence tools in `tools/`: `hash_outputs.sh`, `compare_duckdb_runs.py`, `schema_drift_probe.py`, `scale_probe.py`; raw evidence in `docs/evidence/`.
@@ -274,7 +274,6 @@
 - **What I did:**
   - Checked all 51 SPEC acceptance criteria against the recorded outputs. I read only: results.json, data/marts CSVs, docs/img, evidence, TEST_PLAN, BUGS, validation, DASHBOARD_SPEC, requirements.txt and README.
   - Result: **49 MET, 2 PARTIAL (AC-9.2, AC-12.2), 0 NOT MET. Verdict: ACCEPTED for demo.**
-  - Wrote 3 interview talking points.
   - Ran a README overclaim check.
 - **Checks run:** none executed (no pipeline or pytest run, per the EM). The final-run line recorded in results.json is `"245 passed in 356.12s (0:05:56)"`, 0 failed / 0 skipped / 0 error; dbt nodes 145, passed 145, warn 0, failed 0. This was copied from results.json, not from a console.
 - **Files changed:** docs/team/SIGNOFF.md (new), this file.
@@ -301,13 +300,13 @@ Still open: refresh TEST_PLAN.md counts (QA); hand-check the other 8 KPI formula
 - **Checks run (real):** `quarto render site` OK (6 of 6 pages, no warnings after all pages existed); headless Chrome DOM check found 0 OJS runtime errors on all 6 pages; page `scrollWidth` = 375 at a 375 px viewport on all 6 pages; WCAG contrast computed for every token pair (all text ≥ 4.5:1 after one fix); dataviz palette validator passed blue/orange in light and dark. Screenshots: `docs/img/site/*-{1440,375}.png` (12 files, 3.5 MB).
 - **Files changed:** `site/` (new: _quarto.yml, 6 .qmd, theme*.scss, assets/site.css, assets/site.js, _banner.html, _status.qmd, build_data.py, data/*.json), `docs/img/site/` (new), `docs/team/DESIGN_REVIEW.md` (new), README.md (Interactive site section + screenshot table), .gitignore (`!site/data/`, ignore `site/_site/`, `site/.quarto/`), this file.
 - **Open issues:** page titles are static text (true for seed 42); dot/well tooltips are mouse-only (table twins cover keyboard users); Observable Plot loads from the jsDelivr CDN; no real screen-reader test; 375 px screenshots come from an iframe harness in headless Chrome, not a phone.
-- **Next:** principal-engineer (showcase README/case-study link check), then Michael to review and commit.
+- **Next:** principal-engineer (README/case-study link check), then Michael to review and commit.
 
 ## 2026-10-30: Product Owner (SPEC v2, "real-industry" upgrade)
-- **What I did:** Wrote `docs/team/SPEC_v2.md` from the vaccine R&D research file, SPEC v1, SIGNOFF and USER_TESTING. It has the question, 5 personas (U1-U5), an ontology/action table, PR/FAQ, 7 stories (US-13 to US-19, 50 ACs), new INJ-12..14 plus planted outcomes kept out of recall, four risks, cut line, out-of-scope list, job postings, and decisions D6-D10.
+- **What I did:** Wrote `docs/team/SPEC_v2.md` from the vaccine R&D research file, SPEC v1, SIGNOFF and USER_TESTING. It has the question, 5 personas (U1-U5), an ontology/action table, PR/FAQ, 7 stories (US-13 to US-19, 50 ACs), new INJ-12..14 plus planted outcomes kept out of recall, four risks, cut line, out-of-scope list, and decisions D6-D10.
 - **Stories:** US-13 vendor importers + detector (M), US-14 plate-map template + shifted-column check (S), US-15 20-serotype multiplex + bead-count QC (M), US-16 validation-style summary (S), US-17 NI / sensitivity / lot consistency (M), US-18 stage-gate + exec scorecard feed (S), US-19 regression + honesty (M).
 - **Honesty:** no instrument-compatibility, validation or M10 claims (grep test AC-16.7); Prevnar 20 numbers labelled PUBLIC REFERENCE with the FDA memo URL; bead-count threshold marked UNVERIFIED demo default; IgG used where the real endpoint was OPA, stated in the FAQ.
-- **Checks run:** none (document only). I did not reopen the job-posting URLs; they are marked as such.
+- **Checks run:** none (document only).
 - **Files changed:** docs/team/SPEC_v2.md (new), this file. Nothing under `site/` touched.
 - **Open:** Michael decides D6-D10. Size is tight for 2 days; the cut order is in section 9.
 - **Next:** tech-lead (DESIGN/TASKS for v2), after Michael's decisions.

@@ -534,8 +534,7 @@ the table; they are demo rules, not a real company's.
 :::
 
 ::: {.honest}
-**Honest caveat.** All trial data is SYNTHETIC (seed 42), invented to show how the work is done. This is a portfolio
-demonstration, not a validated system, and it makes no GxP or 21 CFR Part 11 claim. Status rules used above: GREEN =
+**Honest caveat.** All trial data is SYNTHETIC (seed 42), invented to show how the work is done. This is a demonstration, not a validated system, and it makes no GxP or 21 CFR Part 11 claim. Status rules used above: GREEN =
 the written limit is met with room to spare; AMBER = met, but an open item needs a decision; RED = a limit is missed.
 :::
 

@@ -8,7 +8,7 @@ call the audit API. Curve fitting needs scipy. Confidence intervals need t and b
 Thresholds must live in one versioned config (SPEC section 4).
 
 ## Options
-1. Everything in Python (pandas). Simple, but no dbt lineage or dbt tests, which the target roles ask for.
+1. Everything in Python (pandas). Simple, but no dbt lineage or dbt tests.
 2. Everything possible in dbt SQL. Not possible for 4PL, audited writes, or quantiles.
 3. **Split by kind of work**, with a fixed contract between the two.
 

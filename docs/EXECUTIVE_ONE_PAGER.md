@@ -1,6 +1,6 @@
 # Vaccine assay pipeline: executive one-pager
 
-**Synthetic data. A portfolio demonstration, not a deployed or validated system.** 2026-10-30.
+**Synthetic data. A demonstration, not a deployed or validated system.** 2026-10-30.
 
 **The problem.** Before a vaccine trial can say "the vaccine group made more antibody than placebo", an assay lab
 has to run thousands of serum samples on 96-well plates, fit a standard curve to each plate, throw out the plates

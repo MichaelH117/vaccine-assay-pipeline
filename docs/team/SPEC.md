@@ -13,19 +13,19 @@ All data is synthetic. Nothing here describes or uses real patient or trial data
 
 **Synthetic vaccine-trial assay lab gets a full data trail, from blood draw to GMT table, in one command**
 
-*Pearl River style clinical immunology demo, built by Michael Hanson*
+*Clinical immunology demo, built by Michael Hanson*
 
 A vaccine trial lives or dies on its immunogenicity data: did the vaccine group make more antibody than placebo? Before that number reaches a statistician, an assay lab has to receive thousands of serum tubes, keep an unbroken chain of custody, run them on 96-well plates, fit a standard curve to every plate, throw out plates that fail QC, and prove that no record was changed without a trace.
 
 `vaccine-assay-pipeline` does that work end to end on synthetic data. A mini-LIMS tracks every serum sample through collected, received, aliquoted, assayed, and stored, writing every event to an append-only audit trail checked against ALCOA+. A Python pipeline reads raw plate-reader CSVs, fits a 4-parameter logistic (4PL) standard curve per plate, back-calculates antibody concentrations, applies plate- and sample-level QC rules, and accepts or rejects each plate. dbt models then produce GMT, GMFR, and seroresponse rates by vaccine group and visit, plus lab KPIs such as turnaround time and plate failure rate.
 
-The data generator plants known problems (a failing plate, swapped sample IDs, a missing custody step, a late audit entry, and more). The pipeline's own scorecard reports how many it caught. "Lab data people spend their days on exactly these problems," said the imaginary lab head. "Seeing them caught automatically, with a reason code, is what I'd want from a new hire."
+The data generator plants known problems (a failing plate, swapped sample IDs, a missing custody step, a late audit entry, and more). The pipeline's own scorecard reports how many it caught. "Lab data people spend their days on exactly these problems," said the imaginary lab head. "Seeing them caught automatically, with a reason code, is what I'd want from a pipeline."
 
 Run `python -m pipeline.run` (exact command set by DevOps) and open the dashboard spec.
 
 ### FAQ
 
-**Q: Who is this for?** Hiring managers for clinical immunology and vaccine R&D data roles. It shows lab-side data skills: LIMS data, assay math, GxP data integrity, SQL/dbt, and reporting.
+**Q: Who is this for?** The assay lab's data reviewer in a vaccine-trial clinical immunology lab, the study statistician, and QA / data integrity staff. It covers LIMS data, assay math, GxP data integrity, SQL/dbt, and reporting.
 
 **Q: How is it different from Michael's clinical-data-review project?** That project checks CRF/SDTM clinical data with edit checks. This one sits upstream in the lab: specimens, plates, curves, and assay QC. No SDTM domains, no CRF edit checks. The only shared idea is "inject known problems and measure detection".
 
@@ -55,13 +55,7 @@ Run `python -m pipeline.run` (exact command set by DevOps) and open the dashboar
 | GCLP | Good Clinical Laboratory Practice: GLP principles applied to clinical trial sample analysis, covering SOPs, trial material handling and chain of custody, data recording, and repeat analysis. | https://tdr.who.int/publications/i/item/good-clinical-laboratory-practice-(-gclp) |
 | ALCOA+ | Attributable, Legible, Contemporaneous, Original, Accurate, plus Complete, Consistent, Enduring, and Available. Audit trails must show who, what, when, and why, and must be reviewed. | https://www.fda.gov/regulatory-information/search-fda-guidance-documents/data-integrity-and-compliance-drug-cgmp-questions-and-answers (URL not opened in this session: UNVERIFIED link) ; https://www.labmanager.com/audit-trails-data-integrity-and-ai-what-regulated-labs-need-to-know-35642 ; https://casrai.org/dictionary/term/alcoa-plus-data-integrity |
 
-### Employer grounding (Pfizer Pearl River)
-
-- Pearl River, NY is Pfizer's vaccine R&D focus site, covering work from early idea through clinical development, registration, and post-marketing commitments. https://www.pfizer.com/science/research-development/centers/ny_pearl_river
-- Pfizer announced a $470M expansion of its Pearl River vaccine R&D facility in 2022. https://www.bioprocessintl.com/facilities-capacity/pfizer-forks-out-470m-to-expand-pearl-river-vaccine-plant
-- The clinical immunology group runs blood-test assays for vaccine trials under GCLP, using robotic sample handling and a LIMS, and wants automated analysis pipelines. https://www.linkedin.com/jobs/view/4438829272 (from TEAM.md research. I did not re-open it: posting may be closed)
-- A vaccine R&D team is building AI-ready data pipelines from assay and lab notebook data. https://www.linkedin.com/jobs/view/4454595614 (from TEAM.md research. I did not re-open it)
-- Which LIMS product Pearl River uses, and which specific assays (ELISA vs. neutralization vs. multiplex), are UNVERIFIED. The project does not claim either.
+The project does not claim any specific LIMS product or assay used by a real lab.
 
 ---
 
@@ -180,7 +174,7 @@ As Michael (demo owner), I want to prove the pipeline catches the planted proble
 - AC-10.3: False positives (flags on records with no planted problem) are counted and reported. Target: at most [5%] of samples carry a sample-level flag not explained by an injected problem. Natural noise can legitimately cause some DUP_CV flags, so the number is reported, not hidden.
 
 ### US-11: Dashboard build spec
-As a hiring manager, I want a clear dashboard design, so that I can picture the Power BI/Tableau view without installing anything.
+As an assay lab data reviewer, I want a clear dashboard design, so that I can picture the Power BI/Tableau view without installing anything.
 - AC-11.1: `docs/DASHBOARD_SPEC.md` defines 3 pages:
   - Immunogenicity: GMT by group x visit (bar chart with CI error bars), a reverse cumulative distribution curve, and a seroresponse table.
   - Assay QC: plate status grid, curve fit gallery, and a Levey-Jennings style control chart.
@@ -226,12 +220,12 @@ Optional if time allows: an aliquot with 4 freeze-thaws (FREEZE_THAW_EXCEEDED), 
 
 ---
 
-## 7. Job postings this project proves skills for
+## 7. Market evidence
 
-| Posting | Skills shown | Source |
-|---|---|---|
-| Pfizer Pearl River, clinical immunology (GCLP assays, LIMS, automated analysis pipelines) | LIMS chain of custody, assay pipeline, GCLP/ALCOA+ controls | https://www.linkedin.com/jobs/view/4438829272 |
-| Pfizer vaccine R&D, AI-ready data pipelines from assay and notebook data | Structured, tidy assay data model, dbt marts, data lineage | https://www.linkedin.com/jobs/view/4454595614 |
+Public job postings that describe the need this product addresses. Neither was re-opened; they may be closed.
+
+- A clinical immunology posting describes blood-test assays for vaccine trials under GCLP, using robotic sample handling and a LIMS, and asks for automated analysis pipelines. https://www.linkedin.com/jobs/view/4438829272
+- A vaccine R&D posting describes building AI-ready data pipelines from assay and lab notebook data. https://www.linkedin.com/jobs/view/4454595614
 
 ---
 
@@ -240,5 +234,5 @@ Optional if time allows: an aliquot with 4 freeze-thaws (FREEZE_THAW_EXCEEDED), 
 - D1: Database. Recommended: **DuckDB**, which has zero setup on Windows and has dbt-duckdb. The alternative is PostgreSQL, which is closer to a real LIMS backend and enforces append-only with real triggers and REVOKE, but costs setup time.
 - D2: Assay type. Recommended: **ELISA IgG in AU/mL**, where 4PL fits naturally. Strictly, a concentration summary is a "GMC" not a "GMT". Reports will say "GMT/GMC". The alternative is a neutralization titer (ID50), which is more vaccine-flavored but uses a different curve method.
 - D3: Seroresponse definition. Default is the 4-fold / 4 x LLOQ rule above. Confirm, or pick a fixed threshold.
-- D4: Dashboard tool for the spec: Power BI (recommended, it is on his resume) or Tableau.
+- D4: Dashboard tool for the spec: Power BI (recommended) or Tableau.
 - D5: Recommended: include the 2 optional injected problems only if day 1 finishes on time.

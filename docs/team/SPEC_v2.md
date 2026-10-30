@@ -16,7 +16,7 @@ Do not touch `site/` in this round. The Design Lead owns it and is reworking it.
 
 Owner of the question: the clinical immunology data lead at a vaccine R&D site (persona U2). The VP (U5) is the person who has to act on the answer.
 
-v1 answered "did the vaccine beat placebo, and did the pipeline catch planted problems" for one ELISA. v2 moves to the work Pfizer Pearl River publicly describes: a Luminex multiplex IgG assay validated against written criteria [R-11], vendor exports parsed without retyping [R-23..R-25], and FDA-style per-serotype non-inferiority and lot-consistency statistics [R-4].
+v1 answered "did the vaccine beat placebo, and did the pipeline catch planted problems" for one ELISA. v2 moves to the work published sources describe: a Luminex multiplex IgG assay validated against written criteria [R-11], vendor exports parsed without retyping [R-23..R-25], and FDA-style per-serotype non-inferiority and lot-consistency statistics [R-4].
 
 ---
 
@@ -26,7 +26,7 @@ v1 answered "did the vaccine beat placebo, and did the pipeline catch planted pr
 
 **From instrument file to "19 of 20 serotypes non-inferior" with no retyping and every number traceable**
 
-*A synthetic Pearl River style clinical immunology demo by Michael Hanson, version 2*
+*A synthetic clinical immunology demo by Michael Hanson, version 2*
 
 A pneumococcal conjugate vaccine trial is judged serotype by serotype. For Prevnar 20, FDA compared antibody titers for each of 20 serotypes and required the lower bound of the 95% confidence interval of the GMT ratio to be above 0.5. Nineteen passed. Serotype 8 came in at 0.49 [R-4] (PUBLIC REFERENCE). Every one of those numbers started as a file on a plate reader or a Luminex instrument. Every vendor writes its own file layout, and getting those files into a LIMS without mistakes is real, daily work [R-29].
 
@@ -50,17 +50,15 @@ Then one data file feeds a one-screen executive scorecard: on track or not, five
 
 ---
 
-## 2. Employer grounding (Pfizer Pearl River)
+## 2. Public sources for the domain
 
 | Claim | Source |
 |---|---|
-| Pearl River is Pfizer's vaccine R&D site; it led R&D for Prevnar 13 and Trumenba | https://www.pfizer.com/pearl-river-new-york ; VRD brochure https://cdn.pfizer.com/pfizercom/careers/P0353400_VRD_recruiting_brochure.pdf |
-| The VRD brochure lists roles including assay developer, robotics programmer, systems programmer and clinical laboratory scientist, and a sample management system handling millions of trial samples | VRD brochure (above) |
 | The 13-plex pneumococcal Luminex IgG assay (dLIA) was validated by Pfizer Pearl River Vaccine R&D and Biostatistics authors; acceptance criteria in section 3 come from this paper | https://pmc.ncbi.nlm.nih.gov/articles/PMC6083093/ |
 | The dLIA was bridged to the WHO reference ELISA | https://pmc.ncbi.nlm.nih.gov/articles/PMC6083092/ |
 | Prevnar 20 adult licensure used per-serotype OPA GMT non-inferiority (LL > 0.5), 3-lot consistency (0.5, 2.0), and 0.5 × LLOQ imputation with an LLOQ sensitivity check | FDA CBER memo STN 125731/0, https://www.fda.gov/media/150459/download |
 | A published 20-serotype dLIA validation was not found. The published one covers 13 serotypes | Research section 7; PCV20 SAP https://cdn.clinicaltrials.gov/large-docs/38/NCT04530838/SAP_001.pdf |
-| Which instrument software, LIMS, curve model and bead-count threshold Pearl River uses today | **UNVERIFIED.** v2 does not claim any of them. |
+| Which instrument software, LIMS, curve model and bead-count threshold a real lab uses today | **UNVERIFIED.** v2 does not claim any of them. |
 
 ---
 
@@ -89,10 +87,10 @@ Personas come from `USER_TESTING.md` (P1, P2, P8) and the roles in the research 
 
 | ID | Persona | Their day | Afraid of | "Wow, this gets me" |
 |---|---|---|---|---|
-| U1 | **Lab analyst, clinical immunology** (USER_TESTING P8; "clinical laboratory scientist" in the VRD brochure) | Runs 6–18 plates a shift [R-28a]. Exports each run, renames files, copies results into the LIMS, chases plate-map questions | A transcription or plate-map error found after unblinding | "It knew the file type, read it, and told me my map was shifted one column before I submitted" |
+| U1 | **Lab analyst, clinical immunology** (USER_TESTING P8) | Runs 6–18 plates a shift [R-28a]. Exports each run, renames files, copies results into the LIMS, chases plate-map questions | A transcription or plate-map error found after unblinding | "It knew the file type, read it, and told me my map was shifted one column before I submitted" |
 | U2 | **Clinical immunology data lead / lab informatics** (owner of the question) | Owns instrument-to-LIMS parsing and field mapping [R-29b], reviews QC, hands datasets to biostatistics | A silent parse error, an unexplained number in the CSR | "Every reported number traces back to a file hash, a parser version and a QC decision" |
-| U3 | **Assay development / validation scientist** ("assay developer" in the VRD brochure) | Designs validation experiments, computes accuracy, linearity and precision, writes the report | Criteria applied wrongly, cross-reactive pairs miscounted as failures | "It used the published criteria, called out 6A/6B and 19A/19F correctly, and showed a real FAIL instead of hiding it" |
-| U4 | **Biostatistician, early clinical development** (co-author role on the dLIA paper [R-11]) | Programs GMC/GMR, NI tests and lot consistency, mostly in SAS (UNVERIFIED for Pfizer) | Imputation choices changing a conclusion without anyone noticing | "The sensitivity analysis is there and flags exactly which serotypes it would change" |
+| U3 | **Assay development / validation scientist** | Designs validation experiments, computes accuracy, linearity and precision, writes the report | Criteria applied wrongly, cross-reactive pairs miscounted as failures | "It used the published criteria, called out 6A/6B and 19A/19F correctly, and showed a real FAIL instead of hiding it" |
+| U4 | **Biostatistician, early clinical development** (co-author role on the dLIA paper [R-11]) | Programs GMC/GMR, NI tests and lot consistency, mostly in SAS (UNVERIFIED) | Imputation choices changing a conclusion without anyone noticing | "The sensitivity analysis is there and flags exactly which serotypes it would change" |
 | U5 | **VP / Director, Vaccine R&D** (USER_TESTING P1), plus **board member, 68, reading glasses** (P2) | 30 seconds per program: "are we on track, what do you need from me?" | A program that stays green while the science stalls [R-32c] | One verdict, five tiles, the one amber explained, a decision asked |
 
 Workflow v2 (Study B, one plate):
@@ -225,7 +223,7 @@ As Michael, I want v1 to keep working and v2 to stay honest, so that the upgrade
 
 | Risk | Owner | What could go wrong | How we test it |
 |---|---|---|---|
-| Value | PO | A Pearl River reviewer sees "toy formats" or the wrong endpoint and stops reading | Sign-off checks that each story names its public source; ask one lab-scientist reader (USER_TESTING P8 role) to review the v2 README section; FAQ is explicit about OPA vs IgG |
+| Value | PO | A lab reviewer sees "toy formats" or the wrong endpoint and stops reading | Sign-off checks that each story names its public source; ask one lab-scientist reader (USER_TESTING P8 role) to review the v2 README section; FAQ is explicit about OPA vs IgG |
 | Usability | design-lead | The scorecard is a wall of numbers; the amber reads as failure | AC-18.2 to 18.6; UX researcher reruns the 5-second test on the site using the feed |
 | Feasibility | tech-lead | 20 serotypes × curves × plates is slow; landmark parsing is fiddly; variance components need a new dependency | AC-19.3 runtime budget; cut line in section 9; tech-lead may choose a simple nested-ANOVA estimate over a mixed-model package |
 | Business viability (honesty, GxP, legal) | PO | Overclaiming instrument compatibility, validation status or M10; vendor trademarks used as if endorsed; implied use of real data | AC-13.8, AC-16.7 grep test, AC-19.4; importer names use "-style"; no vendor logos; synthetic marker in every generated file |
@@ -250,18 +248,7 @@ Estimated build: about 2 days for the M stories plus US-16 or US-14. If day 1 ru
 
 ---
 
-## 10. Job postings this project proves skills for
-
-| Posting | Skills v2 adds | Source |
-|---|---|---|
-| Pfizer, Scientist, Vaccine Immunology | Multiplex serology data, validation criteria, per-serotype statistics | https://www.pfizer.com/about/careers/job/4959245 (from research [R-20]; I did not reopen it, posting may be closed) |
-| Pfizer, Scientist, Ligand Binding Assay Development | Curve fitting, accuracy/precision/linearity, LLOQ and range | https://www.pfizer.com/about/careers/job/4963445 (same caveat) |
-| Pfizer Pearl River clinical immunology (GCLP, LIMS, automated analysis pipelines) | Instrument-to-LIMS parsing, plate-map control | https://www.linkedin.com/jobs/view/4438829272 (from v1 SPEC; not reopened) |
-| Pfizer vaccine R&D, AI-ready data pipelines from assay data | Tidy per-analyte data model, file provenance | https://www.linkedin.com/jobs/view/4454595614 (from v1 SPEC; not reopened) |
-
----
-
-## 11. Open decisions for Michael
+## 10. Open decisions for Michael## 11. Open decisions for Michael
 
 - **D6, Study design.** Recommended: add Study B (20-plex immunobridging) beside v1's Study A, so the signed-off v1 demo stays intact. Alternative: convert Study A to multiplex (less code, but it breaks v1 sign-off numbers).
 - **D7, Multiplex curve model.** Recommended: reuse the v1 4PL per serotype (already tested, fastest). Alternative: log/log-linear, which is what the Pfizer dLIA paper used [R-11]. More faithful, about half a day more. Either way, the README states which model and that the paper used log/log-linear.

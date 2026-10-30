@@ -3,7 +3,7 @@
 Owner: GxP Validation Engineer seat. Version 0.2 **DRAFT**, 2026-10-30. Final version in Phase 2 (GXP-07), filled with
 the real pytest and `dbt test` output after QA-02.
 
-> Portfolio demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
+> Demonstration on synthetic data. Not a validated system; no regulatory compliance is claimed.
 
 Result column: **PASS (unit)** = passed in the GxP seat's own run on 2026-10-29 (`.venv\Scripts\python -m pytest
 tests/test_audit.py tests/test_custody.py tests/test_alcoa.py tests/qa/test_qa_audit_chain.py`: 70 passed on
