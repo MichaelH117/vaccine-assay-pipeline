@@ -43,6 +43,37 @@ Numbers from `python -m pipeline.run --seed 42`, stored in [docs/results.json](d
 **Start here:** the [one-page summary](docs/EXECUTIVE_ONE_PAGER.md), or the [case study](docs/CASE_STUDY.md)
 (the problem, what was built, what broke and how it was fixed).
 
+## Interactive site
+
+A seven-page static site built with Quarto and Observable Plot: **[site/](site/)** (open `site/_site/index.html`
+after building, or publish to GitHub Pages with `quarto publish gh-pages site`). It is not published yet.
+
+- **Overview (the production story):** a one-screen verdict ("On track", 56 of 58 vs 0 of 60, 13 of 13 caught,
+  tamper detected at the exact row), then six short chapters: where lab testing sits in a real vaccine program
+  (Prevnar 20's public FDA timeline as a labelled reference), antibody dots rising from Day 1 to Day 29, a plate
+  reader that lights each well by its real reading, the 13 test problems, a chain of padlocks that opens at the
+  edited row, and the decision being asked (status per milestone, with confidence). Motion has a pause button and
+  a still version under "reduce motion".
+- **Vaccine results:** every volunteer, filtered by visit and group, with the GMT chart and tables.
+- **Follow one tube:** press play to walk one sample through custody with its audit seal at each step; a tamper
+  switch shows the real chain-verify output for the INJ-7 and INJ-11 test edits.
+- **Lab QC:** plate wall, 96-well map, and the 4PL curve with its valid range (LLOQ to ULOQ) in plain words.
+- **Problems caught:** the 13 test problems, one sentence each. **Glossary** and **How it works** pages.
+
+Build: `.venv\Scripts\python site\build_data.py` (writes small JSON and `site/_variables.yml` from results.json and
+the marts), then `quarto render site`. Design notes and the accessibility pass:
+[docs/team/DESIGN_REVIEW.md](docs/team/DESIGN_REVIEW.md).
+
+| Desktop (1440 px) | Phone (375 px) |
+|---|---|
+| ![Overview: the one-screen verdict, synthetic data](docs/img/site/overview-1440.png) | ![Overview on a phone](docs/img/site/overview-375.png) |
+| ![Story chapter 2: each volunteer's dot rises from Day 1 to Day 29](docs/img/site/story-rise-1440.png) | ![Vaccine results on a phone](docs/img/site/results-375.png) |
+| ![Story chapter 3: the plate reader lights each well by its real reading](docs/img/site/story-reader-1440.png) | ![Lab QC on a phone](docs/img/site/qc-375.png) |
+| ![Story chapter 5: the padlock at the edited audit row is open](docs/img/site/story-chain-1440.png) | ![Follow one tube on a phone](docs/img/site/tube-375.png) |
+| ![Problems caught: 13 of 13 test problems](docs/img/site/scorecard-1440.png) | ![Scorecard on a phone](docs/img/site/scorecard-375.png) |
+
+More screenshots (glossary, how it works) are in [docs/img/site/](docs/img/site/).
+
 ## See it without running it
 
 Charts from the latest local run (`python -m pipeline.run` re-draws the first three;

@@ -1,0 +1,10 @@
+/*-- scss:defaults --*/
+$font-family-sans-serif: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+$font-family-monospace: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+$font-size-root: 18px;
+$line-height-base: 1.55;
+$border-radius: .5rem;
+$headings-font-weight: 600;
+
+/*-- scss:rules --*/
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");

@@ -1,0 +1,203 @@
+---
+title: "Lab QC: 11 of 13 plates passed, and the 2 rejects are the 2 we broke on purpose"
+description: "Plate wall, 96-well view and 4PL standard curve for every SYNTHETIC ELISA plate."
+execute:
+  echo: false
+---
+
+{{< include _status.qmd >}}
+
+::: {.lede}
+Each [ELISA](glossary.qmd#elisa){.term} run uses one 96-well [plate](glossary.qmd#plate){.term}. Every plate carries
+its own ruler: 8 [standards](glossary.qmd#standard-curve){.term} with known amounts, 2 [controls](glossary.qmd#control){.term}
+and [blanks](glossary.qmd#blank){.term}. If the ruler or the controls read wrong, the whole plate is rejected and its
+samples are tested again. Pick a plate, or pick a [QC](glossary.qmd#qc){.term} rule to see where it fired.
+:::
+
+```{ojs}
+P = FileAttachment("data/plates.json").json()
+PS = ({background: "transparent", color: "var(--ink)", fontSize: "var(--chart-font)", fontFamily: "inherit", overflow: "visible"})
+RULES = new Map([
+  ["FIT_FAIL", "Curve would not fit"], ["STD_RECOVERY", "Standards read back wrong"], ["CTRL_OOR", "Control out of range"],
+  ["DUP_CV", "Duplicate wells disagree"], ["ABOVE_ULOQ", "Too high to measure"], ["BELOW_LLOQ", "Too low to measure"],
+  ["ID_MISMATCH", "Plate map and LIMS name different tubes"]
+])
+ruleCount = d3.rollup(P.flags, (v) => v.length, (d) => d.rule_id)
+platesWith = (r) => new Set(P.flags.filter((f) => f.rule_id === r).map((f) => f.plate_id))
+```
+
+## Pick a plate {#pick}
+
+```{ojs}
+viewof rule = Inputs.select(new Map([["All rules (no filter)", "ALL"], ...[...RULES].filter(([k]) => ruleCount.has(k)).map(([k, v]) => [`${v} · ${k} (${ruleCount.get(k)})`, k])]), {label: "QC rule", value: "ALL"})
+```
+
+```{ojs}
+viewof plate = {
+  const hit = rule === "ALL" ? null : platesWith(rule);
+  window.__plate = window.__plate || new URLSearchParams(location.search).get("plate") || "PLATE-004";
+  const wrap = html`<div class="plate-wall" role="group" aria-label="Plates: choose one"></div>`;
+  wrap.value = window.__plate;
+  for (const p of P.plates) {
+    const rej = p.status === "REJECTED";
+    const reasons = p.reject_reasons ? p.reject_reasons.split(",").join(", ") : "";
+    const b = html`<button class="${rej ? "rej" : "acc"} ${hit && !hit.has(p.plate_id) ? "dim" : ""}" aria-pressed="${p.plate_id === wrap.value}">
+      <span class="pid">${p.plate_id}</span><span class="${rej ? "bad-t" : "ok-t"}">${rej ? "✗ Rejected" : "✓ Accepted"}</span>
+      ${reasons ? html`<br><span class="muted" style="font-size:.8rem">${reasons}</span>` : ""}
+      ${p.repeat_of_plate_id ? html`<br><span class="muted" style="font-size:.8rem">repeat of ${p.repeat_of_plate_id}</span>` : ""}</button>`;
+    b.onclick = () => {
+      wrap.value = window.__plate = p.plate_id;
+      wrap.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      wrap.dispatchEvent(new Event("input", {bubbles: true}));
+    };
+    wrap.append(b);
+  }
+  return wrap;
+}
+```
+
+```{ojs}
+pq = P.plates.find((p) => p.plate_id === plate)
+fit = P.fits.find((f) => f.plate_id === plate)
+pFlags = P.flags.filter((f) => f.plate_id === plate)
+plateSummary = {
+  const rej = pq.status === "REJECTED";
+  const why = {
+    FIT_FAIL: "the reference curve could not be fitted",
+    STD_RECOVERY: "the standards did not read back within 80–120% of their known amounts",
+    CTRL_OOR: "a control sample read outside its allowed range (target ±20%)"
+  };
+  const reasons = (pq.reject_reasons || "").split(",").filter(Boolean);
+  return html`<div class="meaning"><strong>${plate}: ${rej ? "rejected" : "accepted"}</strong>
+  ${rej ? `Thrown out because ${reasons.map((r) => why[r] || r).join(", and ")}. Its samples go to the re-assay list; none of its numbers are reported.`
+        : `Curve fit well (R² ${pq.r_squared.toFixed(4)}), ${pq.std_pass_pct.toFixed(0)}% of standards read back within limits, and both controls were in range.`}
+  ${pFlags.filter((f) => f.sample_id).length ? ` ${pFlags.filter((f) => f.sample_id).length} sample-level flag(s) on this plate; see the table below.` : ""}
+  Run ${pq.run_at.slice(0, 16)}.</div>`;
+}
+```
+
+::: {.two-col}
+
+::: {}
+## Inside the plate {#inside}
+
+```{ojs}
+wellChart = {
+  const W = P.wells.filter((w) => w.plate_id === plate);
+  const flagged = new Map();
+  const ruleHits = (f) => rule === "ALL" || f.rule_id === rule;
+  for (const f of pFlags.filter(ruleHits)) {
+    if (f.sample_id) W.filter((w) => w.sample_id === f.sample_id).forEach((w) => flagged.set(w.well, f));
+    else {
+      const types = f.rule_id === "CTRL_OOR" ? ["CTRL_HIGH"] : ["STD"];
+      W.filter((w) => types.includes(w.well_type)).forEach((w) => flagged.set(w.well, f));
+    }
+  }
+  const letter = {STD: "S", CTRL_HIGH: "H", CTRL_LOW: "L", BLANK: "B", SAMPLE: ""};
+  const fillOf = {STD: "var(--vac)", CTRL_HIGH: "var(--ctrl)", CTRL_LOW: "var(--ctrl)", BLANK: "var(--neutral-mark)", SAMPLE: "var(--surface)"};
+  const narrow = width < 520;
+  const w = Math.min(width, 560);
+  const chart = Plot.plot({style: PS,
+    width: w, height: w * 0.72, marginLeft: 30, marginTop: 28, marginBottom: 8, marginRight: 8,
+    x: {domain: d3.range(1, 13), axis: "top", label: null, tickSize: 0},
+    y: {domain: "ABCDEFGH".split(""), label: null, tickSize: 0},
+    marks: [
+      Plot.dot(W, {x: "col_num", y: "row_letter", r: narrow ? 12 : 14,
+        fill: (d) => fillOf[d.well_type] ?? "var(--surface)",
+        fillOpacity: (d) => rule !== "ALL" && !flagged.has(d.well) ? 0.25 : 1,
+        stroke: (d) => flagged.has(d.well) ? "var(--bad)" : "var(--neutral-mark)",
+        strokeWidth: (d) => flagged.has(d.well) ? 3 : 1,
+        strokeDasharray: (d) => flagged.has(d.well) ? "4,2" : null,
+        title: (d) => `${plate} well ${d.well}\n${d.well_type}${d.level != null ? " level " + d.level : ""}${d.sample_id ? "\n" + d.sample_id : ""}\nOD ${d.od}` + (flagged.has(d.well) ? `\n✗ ${flagged.get(d.well).rule_id}: ${flagged.get(d.well).message}` : "")}),
+      Plot.text(W, {x: "col_num", y: "row_letter", text: (d) => flagged.has(d.well) ? "!" : letter[d.well_type], fill: (d) => flagged.has(d.well) && d.well_type === "SAMPLE" ? "var(--bad)" : (d.well_type === "SAMPLE" ? "var(--ink)" : "#fff"), fontWeight: 700, fontSize: "var(--chart-font)"})
+    ]
+  });
+  chart.setAttribute("role", "img");
+  chart.setAttribute("aria-label", `96-well map of ${plate}. ${flagged.size} wells flagged${rule === "ALL" ? "" : " by " + rule}.`);
+  return html`<figure class="card-x"><figcaption><b>The plate, well by well.</b> ${flagged.size ? `${flagged.size} wells marked “!” with a dashed red ring${rule === "ALL" ? "" : " for " + rule}.` : "No wells flagged" + (rule === "ALL" ? "." : " for this rule.")}</figcaption>
+  <div class="plot-wrap">${chart}</div>
+  <div class="unit-legend"><span><b>S</b> standard (known amount)</span><span><b>H / L</b> high / low control</span><span><b>B</b> blank</span><span>○ sample</span><span class="bad-t">! flagged (dashed red ring)</span></div></figure>`;
+}
+```
+:::
+
+::: {}
+## Reference curve {#curve}
+
+```{ojs}
+curveChart = {
+  const S = P.standards.filter((s) => s.plate_id === plate);
+  const smp = P.samples.filter((s) => s.plate_id === plate && s.range_flag);
+  const four = (x) => fit.d + (fit.a - fit.d) / (1 + Math.pow(x / fit.c, fit.b));
+  const xs = d3.range(-1, 3.5, 0.02).map((e) => Math.pow(10, e));
+  const line = xs.map((x) => ({x, y: four(x)})).filter((p) => isFinite(p.y));
+  const inR = smp.filter((s) => s.range_flag === "IN_RANGE").map((s) => ({...s, x: s.conc_au_ml / s.dilution}));
+  const low = smp.filter((s) => s.range_flag === "<LLOQ").map((s) => ({...s, x: 0.15}));
+  const high = smp.filter((s) => s.range_flag === ">ULOQ").map((s) => ({...s, x: 2200}));
+  const band = fit.converged && fit.lloq_conc ? [{x1: fit.lloq_conc, x2: fit.uloq_conc}] : [];
+  const w = Math.min(width, 560);
+  const chart = Plot.plot({style: PS,
+    width: w, height: 360, marginLeft: 56, marginBottom: 48, marginRight: 12,
+    x: {type: "log", domain: [0.1, 3000], label: "Amount in the well (AU/mL, log scale) →", tickFormat: (v) => v.toLocaleString("en-US"), ticks: [0.1, 1, 10, 100, 1000]},
+    y: {domain: [0, 4], label: "↑ Color reading (OD, blank-corrected)", grid: true},
+    marks: [
+      Plot.rectX(band, {x1: "x1", x2: "x2", y1: 0, y2: 4, fill: "var(--band)"}),
+      Plot.text(band, {x: (d) => Math.sqrt(d.x1 * d.x2), y: 3.85, text: () => "valid range", fill: "var(--ink-2)", fontWeight: 600}),
+      Plot.line(line, {x: "x", y: "y", stroke: fit.converged ? "var(--ink)" : "var(--bad)", strokeWidth: 2, strokeDasharray: fit.converged ? null : "6,4"}),
+      Plot.dot(inR, {x: "x", y: "mean_od", r: 3, fill: "var(--neutral-mark)", fillOpacity: 0.6, title: (d) => `${d.sample_id}\nOD ${d.mean_od}\n${d.conc_au_ml.toFixed(1)} AU/mL after 1:${d.dilution} dilution`}),
+      Plot.dot(low.concat(high), {x: "x", y: "mean_od", r: 6, symbol: "triangle", stroke: "var(--bad)", strokeWidth: 2, fill: "none", title: (d) => `${d.sample_id}\nOD ${d.mean_od}\n${d.range_flag}: outside the valid range, not read off the curve`}),
+      Plot.dot(S, {x: "nominal_conc", y: "mean_od", r: 6, fill: (d) => d.within_limits ? "var(--vac)" : "none", stroke: (d) => d.within_limits ? "var(--bs-body-bg)" : "var(--bad)", strokeWidth: 2, symbol: (d) => d.within_limits ? "circle" : "times",
+        title: (d) => `Standard level ${d.level}\nKnown amount ${d.nominal_conc} AU/mL\nOD ${d.mean_od}\nRead back ${d.recovery_pct == null ? "—" : d.recovery_pct.toFixed(1) + "%"} ${d.within_limits ? "✓ within 80–120%" : "✗ outside 80–120%"}`}),
+      Plot.ruleY([0])
+    ]
+  });
+  chart.setAttribute("role", "img");
+  chart.setAttribute("aria-label", `4PL standard curve for ${plate}. ${S.filter((d) => d.within_limits).length} of ${S.length} standards within limits. ${fit.converged ? "Fit converged." : "Fit failed."}`);
+  return html`<figure class="card-x"><figcaption><b>The reference curve (4PL fit).</b> ${fit.converged ? `${S.filter((d) => d.within_limits).length} of ${S.length} standards read back within 80–120%.` : `Fit failed: ${fit.fit_message}. The dashed line is the failed attempt; nothing is read off it.`}</figcaption>
+  <div class="plot-wrap">${chart}</div>
+  <div class="unit-legend"><span><svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="var(--vac)"/></svg>standard, OK</span><span><b class="bad-t">×</b> standard, read back wrong</span><span><svg width="16" height="16"><circle cx="8" cy="8" r="3" fill="var(--neutral-mark)"/></svg>sample read off the curve</span><span><b class="bad-t">△</b> sample outside the valid range (drawn at the edge)</span></div></figure>`;
+}
+```
+:::
+
+:::
+
+```{ojs}
+rangeWords = {
+  if (!fit.converged || !fit.lloq_conc) return html`<div class="meaning"><strong>The valid range, in plain words</strong>
+  This plate has no valid range: its curve could not be fitted, so the pipeline reads <b>no</b> sample off it. That is the safe failure.</div>`;
+  const dil = 100;
+  return html`<div class="meaning"><strong>The valid range (LLOQ to ULOQ), in plain words</strong>
+  The shaded band is where this test can be trusted. On ${plate} it runs from <b>${fit.lloq_conc}</b> to <b>${fit.uloq_conc.toLocaleString("en-US")}</b> AU/mL in the well: the longest unbroken run of standards that read back correctly.
+  Samples are diluted 1 in ${dil}, so in the blood sample that is <b>${(fit.lloq_conc * dil).toFixed(2)}</b> to <b>${(fit.uloq_conc * dil).toLocaleString("en-US")}</b> AU/mL.
+  Inside the band we read the amount off the curve. Outside it the curve goes flat, so a tiny change in color would mean a huge change in amount.
+  We do not guess there: the result is written as “&lt;LLOQ” (too low) or “&gt;ULOQ” (too high: test again at a higher dilution, for example 1 in 1,000).</div>`;
+}
+```
+
+## Flags {#flags}
+
+```{ojs}
+flagTable = {
+  const rows = P.flags.filter((f) => (rule === "ALL" ? f.plate_id === plate : f.rule_id === rule));
+  return html`<details class="table-twin" open><summary>${rule === "ALL" ? `QC flags on ${plate} (${rows.length})` : `Every ${rule} flag, all plates (${rows.length})`} · view as table</summary>
+  <div class="table-scroll"><table class="table-x"><thead><tr><th>Plate</th><th>Sample</th><th>Rule</th><th>In plain words</th><th>Blocks the result?</th><th>Pipeline message</th></tr></thead>
+  <tbody>${rows.length ? rows.map((f) => html`<tr><td>${f.plate_id}</td><td>${f.sample_id ?? "whole plate"}</td><td><code>${f.rule_id}</code></td><td>${RULES.get(f.rule_id)}</td><td>${f.blocking ? html`<span class="bad-t">✗ yes</span>` : html`<span class="warn-t">no, reported as &lt;LLOQ</span>`}</td><td>${f.message}</td></tr>`) : html`<tr><td colspan="6">No flags.</td></tr>`}</tbody></table></div>
+  <p class="muted">Source: <code>assay.qc_flags</code> (rule version QC-RULES-1.0), <code>marts.mart_plate_qc</code>, <code>assay.curve_fits</code>, <code>assay.std_recovery</code>, <code>assay.well_reads</code>. Thresholds from <code>config/qc_rules.yaml</code>; they are demo defaults, not checked against any real assay validation.</p></details>`;
+}
+```
+
+```{ojs}
+plateTable = html`<details class="table-twin"><summary>All 13 plates as a table</summary>
+<div class="table-scroll"><table class="table-x"><thead><tr><th>Plate</th><th>Status</th><th>Reasons</th><th class="num">R²</th><th class="num">Standards OK</th><th class="num">High control (target 300)</th><th class="num">Low control (target 10)</th></tr></thead>
+<tbody>${P.plates.map((p) => html`<tr><td>${p.plate_id}</td><td>${p.status === "REJECTED" ? html`<span class="bad-t">✗ rejected</span>` : html`<span class="ok-t">✓ accepted</span>`}</td><td>${p.reject_reasons || "—"}</td><td class="num">${p.r_squared.toFixed(4)}</td><td class="num">${p.std_pass_pct.toFixed(0)}%</td><td class="num">${p.ctrl_high_conc == null ? "—" : p.ctrl_high_conc.toFixed(1)}</td><td class="num">${p.ctrl_low_conc == null ? "—" : p.ctrl_low_conc.toFixed(2)}</td></tr>`)}</tbody></table></div></details>`
+```
+
+::: {.honest}
+**Honesty notes.** [SYNTHETIC](glossary.qmd#synthetic){.term} plates. The R² minimum (0.98), the 80–120% recovery
+window, the ±20% control window and the 20% duplicate [CV](glossary.qmd#cv){.term} limit are demo defaults from
+`config/qc_rules.yaml`, not taken from a validated method. The [4PL](glossary.qmd#4pl){.term} fit is unweighted. The
+[LLOQ](glossary.qmd#lloq){.term} and [ULOQ](glossary.qmd#uloq){.term} here are the ends of the longest unbroken run of standards that
+read back within limits (`pipeline/curve.py working_range`), which is a simplification of a real method validation.
+:::

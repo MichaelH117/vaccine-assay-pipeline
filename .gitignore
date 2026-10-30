@@ -13,6 +13,7 @@ dist/
 
 # Generated data (rebuilt by `python -m pipeline.run`)
 data/
+!site/data/
 *.duckdb
 *.duckdb.wal
 
@@ -35,3 +36,7 @@ dbt/target_*/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Quarto site build output (rebuilt by `quarto render site`)
+site/_site/
+site/.quarto/

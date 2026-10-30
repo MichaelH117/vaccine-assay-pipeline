@@ -1,0 +1,37 @@
+/*-- scss:defaults --*/
+$body-bg: #f6f8fa;
+$body-color: #10233a;
+$link-color: #0b5cad;
+$primary: #0b5cad;
+$navbar-bg: #ffffff;
+$navbar-fg: #10233a;
+$navbar-hl: #0b5cad;
+$footer-bg: #ffffff;
+
+/*-- scss:rules --*/
+:root {
+  color-scheme: light;
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-2: #eef2f6;
+  --ink: #10233a;
+  --ink-2: #3b4b5f;
+  --muted: #56657a;
+  --line: #d3dbe4;
+  --accent: #0b5cad;
+  --focus: #0b5cad;
+  --vac: #2a78d6;
+  --pla: #eb6834;
+  --neutral-mark: #6b7785;
+  --ctrl: #6250d6;
+  --ok: #006b54;     --ok-bg: #e3f4ef;
+  --bad: #b03a0a;    --bad-bg: #fdebe3;
+  --warn: #8a5a00;   --warn-bg: #fff4d6;
+  --stage-bg: #0e1a26;
+  --stage-ink: #e8f0f7;
+  --stage-muted: #a9bccd;
+  --stage-line: #2b3d50;
+  --hero-bg: linear-gradient(135deg, #0c2236 0%, #0e3048 60%, #0b3a4a 100%);
+  --chart-font: .85rem;
+  --band: rgba(42,120,214,.12);
+}

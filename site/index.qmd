@@ -1,0 +1,531 @@
+---
+title: "On track: the vaccine worked, and every test problem was caught"
+pagetitle: "Overview: the production story"
+description: "A one-screen verdict and a six-chapter story of the SYNTHETIC vaccine trial, for a busy executive."
+execute:
+  echo: false
+---
+
+::: {#verdict .hero .story}
+
+::: {.verdict-row}
+[On track]{.verdict-badge} [In this trial the vaccine worked, the lab checks caught every test problem we
+added on purpose, and **2 items need a decision** ([see the decision](#ch-decision)).]{.verdict-line}
+:::
+
+::: {.hero-stats}
+
+::: {.hero-stat}
+[{{< var vac_d29_n >}} of {{< var vac_d29_total >}}]{.big .vac-t}
+[vaccinated volunteers responded by Day 29]{.lbl}
+[vs **{{< var pla_d29_n >}} of {{< var pla_d29_total >}}** on placebo]{.sub}
+[[Source: every volunteer](results.qmd#dots)]{.src-link}
+:::
+
+::: {.hero-stat}
+[{{< var problems_detected >}} of {{< var problems_planted >}}]{.big .ok-t}
+[test problems caught]{.lbl}
+[**{{< var plates_false_reject >}}** plates rejected without cause]{.sub}
+[[Source: the 13 problems](scorecard.qmd)]{.src-link}
+:::
+
+::: {.hero-stat}
+[Tamper detected ✓]{.big .ok-t .word}
+[at the exact row that was edited]{.lbl}
+[row **{{< var chain_row >}}** of {{< var audit_rows >}}]{.sub}
+[[Source: the real check output](tube.qmd?tamper)]{.src-link}
+:::
+
+:::
+
+[[Skip the story: show all results](#all-results){.skip-story}]{.hero-links}
+
+:::
+
+{{< include _status.qmd >}}
+
+<nav class="rail" aria-label="Story chapters">
+<ol>
+<li><a href="#verdict">Verdict</a></li>
+<li><a href="#ch-program">1. Where it sits</a></li>
+<li><a href="#ch-vaccine">2. Vaccine worked</a></li>
+<li><a href="#ch-lab">3. Lab checks</a></li>
+<li><a href="#ch-caught">4. Problems caught</a></li>
+<li><a href="#ch-tamper">5. Tampering</a></li>
+<li><a href="#ch-decision">6. Decision</a></li>
+<li><a href="#all-results">All results</a></li>
+</ol>
+<button type="button" class="btn-x motion-btn" data-motion-toggle aria-pressed="false">❚❚ Pause motion</button>
+</nav>
+
+```{ojs}
+//| output: false
+imm = FileAttachment("data/immunogenicity.json").json()
+vols = FileAttachment("data/volunteers.json").json()
+P = FileAttachment("data/plates.json").json()
+SC = FileAttachment("data/scorecard.json").json()
+T = FileAttachment("data/tubes.json").json()
+M = FileAttachment("data/meta.json").json()
+trunc1 = (x) => (Math.floor(x * 10) / 10).toFixed(1)
+fmtInt = (x) => Math.floor(x).toLocaleString("en-US")
+row = (g, v) => imm.find((d) => d.group_name === g && d.visit === v)
+// Motion: off under prefers-reduced-motion or when the reader presses "Pause motion" (story.js keeps that state).
+motionOK = () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches && !document.documentElement.classList.contains("motion-paused")
+dur = (ms) => motionOK() ? ms : 0
+// Run fn once when el scrolls into view (or at once when motion is off).
+onView = (el, fn, threshold = 0.35) => {
+  if (!motionOK() || !("IntersectionObserver" in window)) { fn(); return; }
+  const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); fn(); } }, {threshold});
+  io.observe(el);
+}
+```
+
+:::::: {#ch-program .chapter}
+
+## 1. Where this sits: lab testing is the ruler for the trial's main result
+
+[Public reference data, not our trial]{.ref-label}
+
+A real vaccine program takes years. Our SYNTHETIC demo covers one step inside it: **testing volunteers' blood samples
+in the lab during the main trial** (the antibody numbers that decide whether the vaccine worked). If that "ruler" is
+wrong, the whole result is wrong. That is why the lab checks in the next chapters matter.
+
+<ol class="stage-strip" aria-label="Stages of a vaccine program">
+<li class="stage">Discovery</li>
+<li class="stage">Preclinical (animal safety)</li>
+<li class="stage">Phase I (safety)</li>
+<li class="stage">Phase II (dose)</li>
+<li class="stage here" aria-current="step">Phase III (main trial): <b>lab testing of blood samples. This demo.</b></li>
+<li class="stage">FDA review</li>
+<li class="stage">Approval, then batch testing</li>
+</ol>
+
+::: {.keynum}
+[About [8]{.cu} years]{.k}
+[from the first FDA meeting to approval for Pfizer's Prevnar 20 (February 2013 to June 2021)]{.kl}
+:::
+
+::: {.ref-track}
+<div class="track" aria-hidden="true"><span class="yr" style="--t:0">2013</span><span class="yr" style="--t:.24">2015</span><span class="yr" style="--t:.48">2017</span><span class="yr" style="--t:.72">2019</span><span class="yr" style="--t:.96">2021</span><span class="ev" style="--t:.012">1</span><span class="ev amber" style="--t:.07">2</span><span class="ev amber" style="--t:.28">3</span><span class="ev" style="--t:.42">4</span><span class="ev" style="--t:.55">5</span><span class="ev" style="--t:.68">6</span><span class="ev" style="--t:.92">7</span><span class="ev ok" style="--t:1">8</span><span class="gap" style="--l:.07;--r:.42"></span></div>
+
+1. **Feb 7, 2013.** First meeting with FDA about the plan (pre-IND meeting).
+2. **Aug 2013.** Start delayed: an animal safety study showed unexpected heart findings.
+3. **May 2015.** FDA said the data could not yet support the first doses in people.
+4. **Jun–Aug 2016.** First-in-human study agreed, with heart monitoring. About 3 years after the safety finding.
+5. **Jun 19, 2017.** Agreement to move to Phase 2.
+6. **Sep 18, 2018.** End-of-Phase 2 meeting with FDA.
+7. **Oct 8, 2020.** Licence application received by FDA (priority review).
+8. **Jun 8, 2021.** Review completed: approved.
+:::
+
+::: {.meaning}
+**What this means**
+A typical vaccine takes about 10.7 years from animal studies to market, and only about 6% of candidates get there
+(Pronker et al., PLoS ONE 2013). Prevnar 20's main trial was judged mostly on **lab antibody numbers**, not on
+counting who got sick. So the lab test is the trial's ruler, and its checks have to be right.
+:::
+
+[**Sources (public reference data).** Prevnar 20 dates: FDA CBER, BLA Clinical Review Memorandum, Prevnar 20,
+STN 125731/0 (2021), [fda.gov/media/150459/download](https://www.fda.gov/media/150459/download), as summarized by our
+research note. Typical timeline: [Pronker et al., "Risk in Vaccine Research and Development Quantified", PLoS ONE
+2013](https://pmc.ncbi.nlm.nih.gov/articles/PMC3603987/). Prevnar 20 is a real Pfizer product; nothing else on this
+site is real, and our trial is SYNTHETIC.]{.src-note}
+
+::::::
+
+:::::: {#ch-vaccine .chapter}
+
+## 2. The vaccine worked: [{{< var vac_d29_n >}}]{.cu} of {{< var vac_d29_total >}} vaccinated volunteers responded by Day 29, and 0 of 60 on placebo
+
+::: {.scrolly}
+
+::: {.steps}
+
+::: {.step data-step="0"}
+**Day 1, before the shot.** Each dot is one volunteer, placed by their antibody level. Both groups start at about the
+same level (typical level {{< var vac_d1_gmt >}} AU/mL in the vaccine group).
+:::
+
+::: {.step data-step="1"}
+**Day 29.** The vaccine group's dots lift off: their typical level rose about **{{< var vac_d29_gmfr >}} times**, to
+{{< var vac_d29_gmt >}} AU/mL. The placebo dots stay where they were ({{< var pla_d29_gmt >}} AU/mL).
+:::
+
+::: {.step data-step="2"}
+**Who counts as "responded".** A volunteer responded if their level rose at least 4 times from their own Day 1 level.
+Those dots fill in. Two vaccine volunteers have no Day 29 result: their tubes were swapped (a test problem), so the
+pipeline held them back instead of guessing.
+:::
+
+::: {.step data-step="3"}
+**The count.** The same dots line up: **{{< var vac_d29_n >}} of {{< var vac_d29_total >}}** vaccinated volunteers
+({{< var vac_d29_pct >}}%) responded, against **{{< var pla_d29_n >}} of {{< var pla_d29_total >}}** on placebo. The
+true vaccine response rate is likely between {{< var vac_d29_lcl >}}% and {{< var vac_d29_ucl >}}% (95% confidence
+interval).
+:::
+
+::: {.step data-step="4"}
+**Day 57.** Levels eased from the Day 29 peak but stayed high: the vaccine group's typical level was
+{{< var vac_d57_gmt >}} AU/mL, about {{< var vac_d57_gmfr >}} times Day 1. Watch the dots that no longer meet the
+4-times rule move to the end of the row.
+:::
+
+:::
+
+::: {.figure-pin}
+```{ojs}
+riseChart = {
+  const pinOK = () => window.matchMedia("(min-width: 900px) and (min-height: 600px)").matches && motionOK();
+  const by = d3.group(vols, (d) => d.subject_id);
+  const subs = [...by].map(([id, rows]) => {
+    const a = rows.find((r) => r.visit === "D29"), b = rows.find((r) => r.visit === "D57");
+    return {id, group: a.group, base: a.base, d29: a.post, d57: b.post, s29: a.status, s57: b.status};
+  });
+  // deterministic jitter per volunteer
+  const jit = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return (h % 1000) / 1000; };
+  const groups = ["Vaccine", "Placebo"];
+  const count = (g, k, s) => subs.filter((d) => d.group === g && d[k] === s).length;
+  const cap = [
+    "Day 1: both groups start at the same level.",
+    "Day 29: vaccine dots rise; placebo dots stay.",
+    `Filled = rose at least 4 times. Vaccine ${count("Vaccine", "s29", "responded")}, placebo ${count("Placebo", "s29", "responded")}.`,
+    `Day 29: ${row("Vaccine", "D29").sero_n} of ${row("Vaccine", "D29").sero_total} vaccine vs ${row("Placebo", "D29").sero_n} of ${row("Placebo", "D29").sero_total} placebo responded.`,
+    `Day 57: ${row("Vaccine", "D57").sero_n} of ${row("Vaccine", "D57").sero_total} vaccine vs ${row("Placebo", "D57").sero_n} of ${row("Placebo", "D57").sero_total} placebo still meet the rule.`
+  ];
+
+  function build(W, H, stepInit) {
+    const m = {t: 66, r: 14, b: 40, l: 64};
+    const svg = d3.create("svg").attr("width", W).attr("height", H).attr("class", "rise-svg").attr("role", "img");
+    const x = d3.scaleBand().domain(groups).range([m.l, W - m.r]).paddingInner(0.12);
+    const y = d3.scaleLog().domain([15, 400000]).range([H - m.b - 6, m.t + 6]).clamp(true);
+    const axis = svg.append("g").attr("class", "rise-axis").attr("transform", `translate(${m.l - 6},0)`);
+    const ticks = [30, 100, 1000, 10000, 100000];
+    axis.selectAll("g").data(ticks).join("g").attr("transform", (t) => `translate(0,${y(t)})`).call((g) => {
+      g.append("line").attr("x1", 6).attr("x2", W - m.r - m.l + 6).attr("class", "grid");
+      g.append("text").attr("x", -4).attr("dy", "0.32em").attr("text-anchor", "end").text((t) => t.toLocaleString("en-US"));
+    });
+    axis.append("text").attr("x", -m.l + 10).attr("y", m.t - 22).attr("class", "ax-title").text("AU/mL (log)");
+    svg.append("g").selectAll("text").data(groups).join("text").attr("class", "grp")
+      .attr("x", (g) => x(g) + x.bandwidth() / 2).attr("y", 20).attr("text-anchor", "middle")
+      .text((g) => `${g}, ${subs.filter((d) => d.group === g).length}`);
+    const cell = Math.min(x.bandwidth() / 10, (H - m.t - m.b) / 7);
+    const r = Math.max(4, Math.min(9, cell * 0.36));
+    const gridPos = (key, statusKey) => {
+      const pos = new Map();
+      for (const g of groups) {
+        const order = {"responded": 0, "did not respond": 1, "no result": 2};
+        subs.filter((d) => d.group === g).sort((a, b) => order[a[statusKey]] - order[b[statusKey]] || a.id.localeCompare(b.id))
+          .forEach((d, i) => pos.set(d.id, [x(g) + (i % 10 + 0.5) * (x.bandwidth() / 10), m.t + Math.max(10, ((H - m.t - m.b) - 6 * cell) / 2) + (Math.floor(i / 10) + 0.5) * cell]));
+      }
+      return pos;
+    };
+    const g29 = gridPos("id", "s29"), g57 = gridPos("id", "s57");
+    const col = (d) => d.group === "Vaccine" ? "var(--vac)" : "var(--pla)";
+    const state = (d, s) => {
+      const jx = x(d.group) + (0.08 + 0.84 * jit(d.id)) * x.bandwidth();
+      if (s === 0) return {cx: jx, cy: d.base == null ? y(15) : y(d.base), fill: false, nores: d.base == null, hide: d.base == null};
+      if (s === 1 || s === 2) { const v = d.d29 ?? d.base; return {cx: jx, cy: v == null ? y(15) : y(v), fill: s === 2 && d.s29 === "responded", nores: d.s29 === "no result", hide: v == null}; }
+      if (s === 3) { const [cx, cy] = g29.get(d.id); return {cx, cy, fill: d.s29 === "responded", nores: d.s29 === "no result"}; }
+      const [cx, cy] = g57.get(d.id); return {cx, cy, fill: d.s57 === "responded", nores: false};
+    };
+    const dots = svg.append("g").selectAll("circle").data(subs, (d) => d.id).join("circle")
+      .attr("r", r).attr("stroke-width", 2).append("title").text((d) => `${d.id} (${d.group})`).select(function () { return this.parentNode; });
+    const capEl = svg.append("text").attr("class", "rise-cap").attr("x", m.l).attr("y", H - 10);
+    function show(s, ms) {
+      axis.transition().duration(ms).style("opacity", s >= 3 ? 0 : 1);
+      dots.transition().duration(ms).ease(d3.easeCubicInOut).delay((d) => ms ? jit(d.id) * Math.min(260, ms * 0.4) : 0)
+        .attr("cx", (d) => state(d, s).cx).attr("cy", (d) => state(d, s).cy)
+        .attr("fill", (d) => state(d, s).fill ? col(d) : "var(--stage-bg)")
+        .attr("stroke", (d) => state(d, s).nores ? "var(--neutral-mark)" : col(d))
+        .attr("stroke-dasharray", (d) => state(d, s).nores ? "3,2" : null)
+        .attr("opacity", (d) => state(d, s).hide ? 0 : 1);
+      svg.attr("aria-label", "Antibody levels, one dot per volunteer. " + cap[s]);
+      capEl.text(cap[s]);
+    }
+    show(stepInit, 0);
+    return {node: svg.node(), show};
+  }
+
+  const wrap = html`<div class="rise-wrap"></div>`;
+  const stepsEl = document.querySelector("#ch-vaccine .steps");
+  if (pinOK()) {
+    const W = Math.min(660, Math.max(320, width * 0.56)), H = Math.min(520, Math.max(380, window.innerHeight * 0.66));
+    const c = build(W, H, 0);
+    wrap.append(html`<figure class="stage-panel">${c.node}</figure>`);
+    wrap.classList.add("pinned");
+    // The active step is the one nearest the middle of the screen. Normal scrolling only: nothing is hijacked.
+    let cur = -1, raf = 0;
+    const stepEls = [...stepsEl.querySelectorAll(".step")];
+    const pick = () => {
+      raf = 0;
+      const mid = window.innerHeight / 2;
+      let best = 0, bd = Infinity;
+      stepEls.forEach((el, i) => { const r = el.getBoundingClientRect(); const d = Math.abs((r.top + r.bottom) / 2 - mid); if (d < bd) { bd = d; best = i; } });
+      const s = +stepEls[best].dataset.step;
+      if (s !== cur) { const first = cur < 0; cur = s; c.show(s, first ? 0 : dur(750)); stepEls.forEach((el) => el.classList.toggle("active", +el.dataset.step === s)); }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(pick); };
+    window.addEventListener("scroll", onScroll, {passive: true});
+    pick();
+    const onMotion = () => { if (!motionOK()) c.show(cur, 0); };
+    window.addEventListener("storymotion", onMotion);
+    invalidation.then(() => { window.removeEventListener("scroll", onScroll); window.removeEventListener("storymotion", onMotion); });
+  } else {
+    // Static: the same story as small multiples, one per step (also the reduced-motion and phone layout).
+    stepsEl.classList.add("static");
+    const W = Math.min(width, 560), H = 340;
+    stepsEl.querySelectorAll(".step").forEach((el) => {
+      const c = build(W, H, +el.dataset.step);
+      el.append(html`<figure class="stage-panel small">${c.node}</figure>`);
+    });
+    invalidation.then(() => stepsEl.querySelectorAll(".stage-panel.small").forEach((f) => f.remove()));
+  }
+  return wrap;
+}
+```
+:::
+
+:::
+
+::: {.legend-row aria-hidden="true"}
+<span><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="var(--vac)"/></svg>Vaccine, responded</span>
+<span><svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--vac)" stroke-width="2"/></svg>Vaccine, not (yet) responded</span>
+<span><svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--pla)" stroke-width="2"/></svg>Placebo</span>
+<span><svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--neutral-mark)" stroke-width="2" stroke-dasharray="3,2"/></svg>No result (held back)</span>
+:::
+
+::: {.end-card}
+[{{< var vac_d29_pct >}}%]{.ec-num} [of vaccinated volunteers responded by Day 29, against
+{{< var pla_d29_n >}} of {{< var pla_d29_total >}} on placebo. Every volunteer, with a table: [Vaccine results](results.qmd).]{.ec-text}
+:::
+
+::::::
+
+:::::: {#ch-lab .chapter}
+
+## 3. The lab threw out only the plates it should: [{{< var plates_accepted >}}]{.cu} of {{< var plates >}} plates accepted, and both rejects were test problems
+
+Inside the plate reader, light shines through each of the 96 small wells on a test plate. The more antibody in a
+sample, the deeper the yellow color, and the more light the well blocks. That blocked light is the reading (OD).
+Below are the real readings from one plate. Press **Play** to sweep the read head across it.
+
+```{ojs}
+plateReader = {
+  const pid = "PLATE-004";
+  const W = P.wells.filter((w) => w.plate_id === pid);
+  const flagged = new Set(P.flags.filter((f) => f.plate_id === pid && f.sample_id).map((f) => f.sample_id));
+  const maxOD = d3.max(W, (w) => w.od);
+  const glow = d3.scaleSequential([0, maxOD], d3.interpolateRgb("#16202b", "#ffd84a"));
+  const Wd = Math.min(width, 760), cellW = (Wd - 40) / 12, H = cellW * 8 + 40;
+  const r = Math.min(cellW * 0.4, 26);
+  const svg = d3.create("svg").attr("width", Wd).attr("height", H).attr("class", "reader-svg").attr("role", "img")
+    .attr("aria-label", `Plate reader view of ${pid}: 96 wells, each lit by its real OD reading, highest ${maxOD}. Brighter means more antibody.`);
+  const defs = svg.append("defs");
+  defs.append("filter").attr("id", "wellglow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%")
+    .html(`<feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>`);
+  const cx = (c) => 34 + (c - 0.5) * cellW, cy = (rI) => 30 + (rI + 0.5) * cellW;
+  svg.append("g").selectAll("text").data(d3.range(1, 13)).join("text").attr("class", "rd-lab").attr("x", cx).attr("y", 18).attr("text-anchor", "middle").text((d) => d);
+  svg.append("g").selectAll("text").data("ABCDEFGH".split("")).join("text").attr("class", "rd-lab").attr("x", 12).attr("y", (d, i) => cy(i)).attr("dy", "0.35em").text((d) => d);
+  const wells = svg.append("g").selectAll("circle").data(W).join("circle")
+    .attr("cx", (w) => cx(w.col_num)).attr("cy", (w) => cy("ABCDEFGH".indexOf(w.row_letter))).attr("r", r)
+    .attr("fill", "#16202b").attr("stroke", (w) => flagged.has(w.sample_id) ? "var(--bad)" : "#3a4a5c")
+    .attr("stroke-width", (w) => flagged.has(w.sample_id) ? 3 : 1).attr("stroke-dasharray", (w) => flagged.has(w.sample_id) ? "4,2" : null);
+  wells.append("title").text((w) => `${pid} ${w.well}: ${w.well_type}${w.sample_id ? " " + w.sample_id : ""}, OD ${w.od}`);
+  const bangs = svg.append("g").selectAll("text").data(W.filter((w) => flagged.has(w.sample_id))).join("text").attr("class", "rd-bang")
+    .attr("x", (w) => cx(w.col_num)).attr("y", (w) => cy("ABCDEFGH".indexOf(w.row_letter))).attr("dy", "0.35em").attr("text-anchor", "middle").text("!").style("opacity", 0);
+  const head = svg.append("rect").attr("class", "read-head").attr("y", 24).attr("height", cellW * 8 + 12).attr("width", cellW * 0.9).attr("x", cx(1) - cellW * 0.45).style("opacity", 0);
+  const light = (col, ms) => {
+    wells.filter((w) => w.col_num <= col).transition().duration(ms).attr("fill", (w) => glow(w.od)).attr("filter", (w) => w.od > maxOD * 0.6 ? "url(#wellglow)" : null);
+    bangs.filter((w) => w.col_num <= col).transition().duration(ms).style("opacity", 1);
+  };
+  let timer = null, col = 0;
+  const btn = html`<button type="button" class="btn-x primary" aria-pressed="false">▶ Play the read</button>`;
+  const stop = () => { if (timer) clearInterval(timer); timer = null; btn.textContent = col >= 12 ? "↺ Read again" : "▶ Play the read"; btn.setAttribute("aria-pressed", "false"); head.style("opacity", 0); };
+  const showAll = () => { stop(); col = 12; light(12, 0); btn.textContent = "↺ Read again"; };
+  const play = () => {
+    if (!motionOK()) return showAll();
+    if (col >= 12) { col = 0; wells.attr("fill", "#16202b").attr("filter", null); bangs.style("opacity", 0); }
+    btn.textContent = "❚❚ Pause"; btn.setAttribute("aria-pressed", "true"); head.style("opacity", 1);
+    timer = setInterval(() => {
+      col += 1; head.transition().duration(110).attr("x", cx(col) - cellW * 0.45); light(col, 160);
+      if (col >= 12) stop();
+    }, 130);
+  };
+  btn.onclick = () => timer ? stop() : play();
+  const fig = html`<figure class="stage-panel reader">
+    <div class="controls">${btn}</div>
+    ${svg.node()}
+    <figcaption>${pid}, real readings. Brighter = more light blocked = more antibody (OD 0 to ${maxOD}). Columns 1–2 are the reference standards (known amounts). <span class="bad-t">Dashed ring with “!”</span> = wells of a sample a check flagged (${flagged.size} samples on this plate, 2 wells each).</figcaption></figure>`;
+  onView(fig, () => motionOK() ? play() : showAll(), 0.4);
+  const onMotion = () => { if (!motionOK()) showAll(); };
+  window.addEventListener("storymotion", onMotion);
+  invalidation.then(() => { stop(); window.removeEventListener("storymotion", onMotion); });
+  return fig;
+}
+```
+
+```{ojs}
+plateWall = {
+  const WHY = {FIT_FAIL: "reference curve would not fit", STD_RECOVERY: "standards read back wrong", CTRL_OOR: "a control read outside its range"};
+  const cause = Object.fromEntries(P.plates.filter((p) => p.status === "REJECTED").map((p) => {
+    const hit = SC.rows.find((r) => r.affected_key === p.plate_id);
+    return [p.plate_id, p.reject_reasons.split(",").map((k) => WHY[k] || k).join("; ") + (hit ? ` (test problem ${hit.problem_id})` : " (no test problem: a false rejection)")];
+  }));
+  return html`<ul class="mini-wall" aria-label="All ${P.plates.length} plates">${P.plates.map((p) => {
+    const rej = p.status === "REJECTED";
+    return html`<li class="${rej ? "rej" : "acc"}"><b>${p.plate_id}</b><span class="${rej ? "bad-t" : "ok-t"}">${rej ? "✗ Rejected" : "✓ Accepted"}</span>${rej ? html`<small>${cause[p.plate_id] || p.reject_reasons}</small>` : p.repeat_of_plate_id ? html`<small>re-run of ${p.repeat_of_plate_id}</small>` : ""}</li>`;
+  })}</ul>`;
+}
+```
+
+::: {.end-card}
+[{{< var plates_false_reject >}}]{.ec-num} [plates rejected without a reason. The checks did not reject good plates.
+The plate-by-plate detail: [Lab QC](qc.qmd).]{.ec-text}
+:::
+
+::::::
+
+:::::: {#ch-caught .chapter}
+
+## 4. Every test problem was caught: [{{< var problems_detected >}}]{.cu} of {{< var problems_planted >}}, each by the check meant to catch it
+
+Before the pipeline ran, the data generator added 13 problems on purpose and wrote them into a hidden answer key: bad
+lab work, swapped tubes, missing paperwork and two kinds of tampering. The pipeline never sees the key.
+
+```{ojs}
+caughtGrid = {
+  const CAT = {"INJ-1": "Lab bench", "INJ-5": "Lab bench", "INJ-6": "Lab bench", "INJ-8": "Lab bench",
+    "INJ-2": "Tube identity and custody", "INJ-3": "Tube identity and custody", "INJ-4": "Tube identity and custody",
+    "INJ-7": "Tampering", "INJ-11": "Tampering"};
+  const WORD = {"INJ-1": "Weak reference wells", "INJ-2": "Two tubes swapped", "INJ-3": "Missing custody step", "INJ-4": "Late paperwork",
+    "INJ-5": "Control read too high", "INJ-6": "Duplicate wells disagree", "INJ-7": "Audit row edited", "INJ-8": "Sample too high to measure", "INJ-11": "Record edited, audit left alone"};
+  const probs = [...d3.group(SC.rows, (r) => r.problem_id)].map(([pid, rows]) => ({pid, inj: rows[0].inj_type, ok: rows.every((r) => r.problem_detected), by: [...new Set(rows.map((r) => r.caught_by).filter(Boolean))].join(", ")}));
+  const cats = ["Lab bench", "Tube identity and custody", "Tampering"];
+  const grid = html`<div class="caught-grid">${cats.map((c) => html`<section class="caught-col"><h3>${c}</h3><ul>${probs.filter((p) => CAT[p.inj] === c).map((p, i) =>
+    html`<li class="${p.ok ? "ok" : "miss"}" style="--i:${i}"><span class="tick" aria-hidden="true">${p.ok ? "✓" : "✗"}</span><span><b>${WORD[p.inj]}</b><small>${p.pid} · ${p.ok ? "caught by" : "missed;"} ${p.by || "no check"}</small></span><span class="visually-hidden">${p.ok ? "caught" : "missed"}</span></li>`)}</ul></section>`)}</div>`;
+  onView(grid, () => grid.classList.add("go"), 0.25);
+  return grid;
+}
+```
+
+::: {.meaning}
+**What this means**
+The checks also do not cry wolf: {{< var plates_false_reject >}} of {{< var plates >}} plates were rejected without a
+test problem behind them, and {{< var samples_unexplained >}} of {{< var samples >}} samples carried a flag the answer
+key does not explain (a second flag on the tampered tube). Honest limit: the same team added the problems and wrote
+the checks, so this shows the checks work as designed, not that they would catch every real error.
+:::
+
+::: {.end-card}
+[{{< var problems_detected >}} of {{< var problems_planted >}}]{.ec-num} [test problems caught, {{< var keys_detected >}}
+of {{< var keys_planted >}} affected records, {{< var problem_types >}} problem types. Each one in a sentence:
+[Problems caught](scorecard.qmd).]{.ec-text}
+:::
+
+::::::
+
+:::::: {#ch-tamper .chapter}
+
+## 5. Tampering was detected at the exact row edited: row [{{< var chain_row >}}]{.cu} of {{< var audit_rows >}}
+
+Every time a tube changes hands, the lab system writes an audit row and **seals** it: a code computed from the row and
+from the row before it, like padlocks on one chain. We edited one row directly in the database (moving a date back one
+day). Its seal no longer matched, so its padlock opened, and the check stopped there.
+
+```{ojs}
+padlocks = {
+  const t = T.tubes.find((x) => x.inj_type === "INJ-7");
+  const cv = T.chain_verify;
+  const steps = t.steps;
+  const lock = (open) => `<svg class="lock" viewBox="0 0 40 48" width="40" height="48" aria-hidden="true"><path class="shackle" d="M11 22 V14 a9 9 0 0 1 18 0 V22" fill="none" stroke-width="4" ${open ? 'transform="translate(0,-7) rotate(-18 29 22)"' : ""}/><rect x="5" y="21" width="30" height="24" rx="5"/></svg>`;
+  const items = [{label: `Rows 1–${(steps[0].audit_seq - 1).toLocaleString("en-US")}`, sub: "earlier rows", ok: true, many: true},
+    ...steps.map((s) => ({label: `Row ${s.audit_seq.toLocaleString("en-US")}`, sub: s.step, ok: s.seal_ok, real: s})),
+    {label: `Rows ${(cv.first_broken_seq + 1).toLocaleString("en-US")}–${M.audit_rows_total.toLocaleString("en-US")}`, sub: "not checked after the break", ok: null, many: true}];
+  const replayBtn = html`<button type="button" class="btn-x">↺ Run the check again</button>`;
+  const chain = html`<ol class="chain" aria-label="Audit chain for tube ${t.sample_id}">${items.map((it, i) => html`<li class="link ${it.many ? "many" : ""}" data-ok="${it.ok}" style="--i:${i}">
+    <span class="lk"></span><b>${it.label}</b><small>${it.sub}</small><span class="st">${it.ok === null ? "untrusted until investigated" : it.ok ? "✓ seal matches" : "✗ seal broken"}</span></li>`)}</ol>`;
+  chain.querySelectorAll(".link").forEach((li, i) => { li.querySelector(".lk").innerHTML = lock(items[i].ok === false); });
+  const out = html`<p class="verify-line" aria-live="polite"></p>`;
+  const run = () => {
+    chain.classList.remove("go", "done"); out.textContent = "";
+    if (!motionOK()) { chain.classList.add("go", "done"); out.innerHTML = `Check result: <b>stopped at row ${cv.first_broken_seq.toLocaleString("en-US")}</b> (${t.event_id}, the row we edited). Rows checked: ${cv.rows_checked.toLocaleString("en-US")}.`; return; }
+    void chain.offsetWidth; chain.classList.add("go");
+    setTimeout(() => { chain.classList.add("done"); out.innerHTML = `Check result: <b>stopped at row ${cv.first_broken_seq.toLocaleString("en-US")}</b> (${t.event_id}, the row we edited). Rows checked: ${cv.rows_checked.toLocaleString("en-US")}.`; }, 1100);
+  };
+  replayBtn.onclick = run;
+  const fig = html`<figure class="stage-panel chain-panel"><div class="controls">${replayBtn}</div>${chain}${out}
+  <figcaption>Tube ${t.sample_id}, its 5 custody steps (audit rows ${steps[0].audit_seq.toLocaleString("en-US")}–${steps[steps.length - 1].audit_seq.toLocaleString("en-US")}). Every seal shown is real; the check is the pipeline's own <code>audit.chain_verify</code>.</figcaption></figure>`;
+  onView(fig, run, 0.4);
+  const onMotion = () => { if (!motionOK()) { chain.classList.add("go", "done"); run(); } };
+  window.addEventListener("storymotion", onMotion);
+  invalidation.then(() => window.removeEventListener("storymotion", onMotion));
+  return fig;
+}
+```
+
+::: {.meaning}
+**What this means**
+The lab system **detects** an edit like this; it cannot **prevent** one. A second, quieter kind of tampering
+(changing who did a step, while leaving the audit row alone) keeps every seal intact. A separate record check caught
+that one too (test problem P-013). Press play on each tube: [Follow one tube](tube.qmd).
+:::
+
+::::::
+
+:::::: {#ch-decision .chapter}
+
+## 6. The decision being asked: approve the Day 29 report, after 2 open items are closed
+
+The status of each milestone in this SYNTHETIC program, with how sure we are. Status thresholds are written below
+the table; they are demo rules, not a real company's.
+
+::: {.table-scroll}
+| Milestone | Status | Evidence | Confidence |
+|---|---|---|---|
+| Vaccine response (Day 29) | [✓ GREEN]{.rag .g} | {{< var vac_d29_n >}} of {{< var vac_d29_total >}} vs {{< var pla_d29_n >}} of {{< var pla_d29_total >}}; vaccine 95% confidence interval {{< var vac_d29_lcl >}}–{{< var vac_d29_ucl >}}%, placebo up to {{< var pla_d29_ucl >}}% | **High.** The two ranges are far apart. |
+| Lab plate quality | [✓ GREEN]{.rag .g} | {{< var plates_accepted >}} of {{< var plates >}} plates accepted; {{< var plates_false_reject >}} rejected without cause | **High** for these plates. Limits are demo defaults. |
+| Results complete | [▲ AMBER]{.rag .a} | {{< var reportable >}} of {{< var samples >}} samples have a result; {{< var missing >}} held back (swapped tubes); {{< var reassay >}} needed a re-test ({{< var reassay_pct >}}%) | **High** on the count. The 2 missing results need new samples or a re-check of identity. |
+| Data integrity (audit trail) | [▲ AMBER]{.rag .a} | Tamper detected at row {{< var chain_row >}}; rows after it are not trusted until investigated | **Medium.** Detection worked; the investigation is not done. |
+| Turnaround | [● NO TARGET]{.rag .n} | Median {{< var tat_median >}} days from sample received to result (90% within {{< var tat_p90 >}} days) | No target was set for this demo, so no status is given. |
+
+: Milestone status, synthetic program {.rag-table}
+:::
+
+::: {.decision}
+**The decision being asked (SYNTHETIC scenario)**
+
+1. Open an investigation into the edited audit row ({{< var tamper_key >}}, row {{< var chain_row >}}) before the
+   data are locked.
+2. Re-check the identity of the {{< var missing >}} swapped tubes, or collect new samples.
+3. Then approve the Day 29 report. Everything else is ready.
+:::
+
+::: {.honest}
+**Honest caveat.** All trial data is SYNTHETIC (seed 42), invented to show how the work is done. This is a portfolio
+demonstration, not a validated system, and it makes no GxP or 21 CFR Part 11 claim. Status rules used above: GREEN =
+the written limit is met with room to spare; AMBER = met, but an open item needs a decision; RED = a limit is missed.
+:::
+
+::::::
+
+## All results on one table {#all-results}
+
+::: {.table-scroll}
+| Question | Result | Where the detail is |
+|---|---|---|
+| Did the vaccine work? | {{< var vac_d29_n >}} of {{< var vac_d29_total >}} vaccinated volunteers responded by Day 29 ({{< var vac_d29_pct >}}%, 95% confidence interval {{< var vac_d29_lcl >}}–{{< var vac_d29_ucl >}}%); {{< var pla_d29_n >}} of {{< var pla_d29_total >}} on placebo | [Vaccine results](results.qmd) |
+| How much did antibodies rise? | Typical level (GMT) rose about {{< var vac_d29_gmfr >}} times by Day 29, to {{< var vac_d29_gmt >}} AU/mL; about {{< var gmr_d29 >}} times the placebo group's {{< var pla_d29_gmt >}} AU/mL (GMR) | [Vaccine results](results.qmd#levels) |
+| Did it last? | Day 57 typical level {{< var vac_d57_gmt >}} AU/mL, about {{< var vac_d57_gmfr >}} times Day 1 | [Vaccine results](results.qmd?visit=D57) |
+| Were the lab plates good? | {{< var plates_accepted >}} of {{< var plates >}} accepted; both rejects were test problems; {{< var plates_false_reject >}} rejected without cause | [Lab QC](qc.qmd) |
+| Were the test problems caught? | {{< var problems_detected >}} of {{< var problems_planted >}} ({{< var keys_detected >}} of {{< var keys_planted >}} records); {{< var samples_unexplained >}} of {{< var samples >}} samples with an unexplained flag | [Problems caught](scorecard.qmd) |
+| Was tampering detected? | Yes, at row {{< var chain_row >}} of {{< var audit_rows >}} ({{< var tamper_key >}}), the row we edited | [Follow one tube](tube.qmd) |
+| How complete are the results? | {{< var reportable >}} of {{< var samples >}} samples reportable; {{< var reassay >}} re-tested; median turnaround {{< var tat_median >}} days | [How it works](about.qmd) |
+
+: Every headline result, from `docs/results.json` and `data/marts` (SYNTHETIC) {.summary-table}
+:::
+
+::: {.end-card .final}
+[{{< var problems_detected >}} of {{< var problems_planted >}}]{.ec-num} [test problems caught, with
+{{< var plates_false_reject >}} false plate rejections, and the vaccine worked: {{< var vac_d29_n >}} of
+{{< var vac_d29_total >}} responded. On track.]{.ec-text}
+:::

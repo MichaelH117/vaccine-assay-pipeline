@@ -1,0 +1,101 @@
+---
+title: "Problems caught: all {{< var problems_detected >}} of {{< var problems_planted >}} test problems, each by the check meant to catch it"
+description: "Detection scorecard for the 13 test problems added on purpose to the SYNTHETIC data."
+execute:
+  echo: false
+---
+
+{{< include _status.qmd >}}
+
+::: {.lede}
+Before the pipeline ran, the data generator added 13 problems on purpose and wrote them into a hidden answer key: bad lab work,
+swapped tubes, missing paperwork and two kinds of tampering. The pipeline never sees the key. Afterwards the scorecard
+compares what the pipeline flagged with the key. Here is each problem in one sentence.
+:::
+
+```{ojs}
+SC = FileAttachment("data/scorecard.json").json()
+PL = FileAttachment("data/plates.json").json()
+dupCV = (sid) => { const f = PL.flags.find((x) => x.rule_id === "DUP_CV" && x.sample_id === sid); const m = f && f.message.match(/CV ([0-9.]+)%/); return m ? m[1] : null; }
+fmt = (n) => Number(n).toLocaleString("en-US")
+CAT = ({"INJ-1": "Lab bench", "INJ-5": "Lab bench", "INJ-6": "Lab bench", "INJ-8": "Lab bench",
+        "INJ-2": "Tube identity and custody", "INJ-3": "Tube identity and custody", "INJ-4": "Tube identity and custody",
+        "INJ-7": "Tampering", "INJ-11": "Tampering"})
+story = (r) => {
+  const num = (r.description.match(/(\d{4,})/) || [])[1];
+  switch (r.inj_type) {
+    case "INJ-1": return "Three of the plate's reference wells (standards 2, 4 and 6) were pipetted at one-fifth strength. The curve would not fit and the standards read back wrong, so the whole plate was rejected.";
+    case "INJ-2": return `Two tubes (${r.problems.map((x) => x.affected_key).join(" and ")}) were swapped in the plate map. The plate map and the LIMS disagreed about which tube was in which well, so both results were held back rather than reported under the wrong person.`;
+    case "INJ-3": return "A tube's “received” step was never written down. The custody check spotted the gap between “collected” and “aliquoted”.";
+    case "INJ-4": return "A custody step was written down 30 hours after it happened; the limit is 24. It was flagged as a late entry, the “Contemporaneous” part of ALCOA+.";
+    case "INJ-5": return "The high control read at 1.6 times its target while the curve itself looked fine. The control check rejected the plate.";
+    case "INJ-6": { const cv = dupCV(r.problems[0].affected_key); return `One of the sample's two duplicate wells was made to read much lower than the other. The two wells' CV (coefficient of variation) was ${cv ?? "over 20"}%, above the 20% limit, so the duplicate check blocked the result and sent it for re-test.`; }
+    case "INJ-7": return "Someone edited a custody row in the audit log directly in the database, moving its date back one day. Its seal no longer matched, and the hash chain broke at that exact row.";
+    case "INJ-8": return `The sample's true level${num ? ` (${fmt(num)} AU/mL)` : ""} was above what the test can measure at a 1 in 100 dilution. It was flagged “too high” and sent for re-test at a higher dilution (for example 1 in 1,000), not guessed.`;
+    case "INJ-11": return "Someone changed the name of the technician on a custody step by editing the record directly and leaving the audit trail alone. Every seal still matched, but the record check saw the record no longer agreed with its audit row.";
+    default: return r.description;
+  }
+}
+problems = {
+  const by = d3.group(SC.rows, (r) => r.problem_id);
+  return [...by].map(([pid, rows]) => ({problem_id: pid, inj_type: rows[0].inj_type, description: rows[0].description,
+    detected: rows.every((r) => r.problem_detected), caught_by: [...new Set(rows.map((r) => r.caught_by).filter(Boolean))].join(", "),
+    expected: rows[0].expected_flags, problems: rows, category: CAT[rows[0].inj_type] || "Other"}));
+}
+```
+
+## The 13 problems {#problems}
+
+```{ojs}
+viewof cat = Inputs.radio(["All", "Lab bench", "Tube identity and custody", "Tampering"], {label: "Show", value: "All"})
+```
+
+```{ojs}
+cards = {
+  const list = problems.filter((p) => cat === "All" || p.category === cat);
+  return html`<div class="score-grid" role="list">${list.map((p) => html`<article class="score-card ${p.detected ? "" : "miss"}" role="listitem">
+    <h3>${p.detected ? html`<span class="ok-t">✓ Caught</span>` : html`<span class="bad-t">✗ Missed</span>`} · ${p.problem_id}</h3>
+    <p class="story">${story(p)}</p>
+    <p class="meta">Added as ${p.inj_type} on ${p.problems.map((x) => x.affected_key).join(", ")} · expected flag <code>${p.expected}</code> · raised <code>${p.caught_by || "none"}</code> · ${p.category}</p>
+  </article>`)}</div>`;
+}
+```
+
+```{ojs}
+scTable = html`<details class="table-twin"><summary>View the scorecard as a table (${SC.rows.length} affected records)</summary>
+<div class="table-scroll"><table class="table-x"><thead><tr><th>Problem</th><th>Type</th><th>Record</th><th>What was added (generator's words)</th><th>Expected flag</th><th>Caught by</th><th>Detected</th></tr></thead>
+<tbody>${SC.rows.map((r) => html`<tr><td>${r.problem_id}</td><td>${r.inj_type}</td><td>${r.affected_key}</td><td>${r.description}</td><td><code>${r.expected_flags}</code></td><td><code>${r.caught_by ?? "—"}</code></td><td>${r.problem_detected ? "✓ yes" : "✗ no"}</td></tr>`)}</tbody></table></div>
+<p class="muted">Source: <code>marts.detection_scorecard</code>, <code>marts.scorecard_summary</code>. Expected flags per problem type come from <code>config/qc_rules.yaml</code>. A problem only counts as caught if the expected flag fired and no "masking" flag explains it instead (for example, a control failure on a plate whose curve also failed is not credited).</p></details>`
+```
+
+## Could it be cheating by flagging everything? No: false alarms are counted too
+
+```{ojs}
+fpBox = {
+  const fp = SC.false_positives;
+  return html`<div class="two-col">
+  <div class="card-x"><div class="k-title"><b>Samples with a flag the answer key does not explain</b></div>
+    <div class="big-result" style="color:var(--ink)">${fp.samples_with_unexplained_flag} <small style="font-size:1rem">of ${fp.samples_total}</small></div>
+    <p class="muted">${(Math.floor(fp.fp_pct * 1000) / 1000).toFixed(3)}% (target: at most 5%). It is SMP-00180: the record check flagged it a second time for the same tampered audit row (INJ-7). It is left visible on purpose rather than hidden by widening the answer key.</p></div>
+  <div class="card-x"><div class="k-title"><b>Plates rejected without a test problem behind them</b></div>
+    <div class="big-result" style="color:var(--ink)">${fp.plates_rejected_unexplained} <small style="font-size:1rem">of ${fp.plates_total}</small></div>
+    <p class="muted">${fp.plates_rejected} plates rejected in total: exactly the two plates where a test problem was added.</p></div></div>`;
+}
+```
+
+```{ojs}
+finale = {
+  const s = SC.summary;
+  return html`<div class="card-x" style="text-align:center;border-top:4px solid var(--ok)">
+  <div class="big-result">✓ ${s.required_problems_detected} of ${s.required_problems_planted}</div>
+  <p style="margin:.4rem auto 0;max-width:60ch"><b>Every test problem was caught</b>, ${s.keys_detected} of ${s.keys_planted} affected records, across ${s.required_inj_types_planted} problem types, with ${SC.false_positives.plates_rejected_unexplained} false plate rejections.</p></div>`;
+}
+```
+
+::: {.honest}
+**Honesty notes.** The problems were added to [SYNTHETIC](glossary.qmd#synthetic){.term} data by the same team that
+wrote the checks, so catching them shows the checks work as designed, not that they would catch every real-world
+error. Two optional problem types (too many freeze-thaw cycles, a step with no named performer) exist in the generator
+but were not added in this run (0 of 0 optional). The first build missed the INJ-11 kind of tamper; code review found
+it, and the fix is in ADR 007.
+:::

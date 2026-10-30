@@ -1,0 +1,157 @@
+---
+title: "Vaccine results: {{< var vac_d29_n >}} of {{< var vac_d29_total >}} vaccinated volunteers responded by Day 29, against {{< var pla_d29_n >}} of {{< var pla_d29_total >}} on placebo"
+description: "Deep dive: every volunteer, every visit, with the typical antibody level and its 95% confidence interval. SYNTHETIC data."
+execute:
+  echo: false
+---
+
+{{< include _status.qmd >}}
+
+::: {.lede}
+This page shows every volunteer in the **SYNTHETIC** trial. Pick a visit and the groups to compare. Every chart,
+table and sentence on this page follows your choice. The short version of this story is on the
+[Overview](index.qmd).
+:::
+
+```{ojs}
+imm = FileAttachment("data/immunogenicity.json").json()
+vols = FileAttachment("data/volunteers.json").json()
+term = (id, label) => { const a = document.createElement("a"); a.className = "term"; a.href = `glossary.html#${id}`; a.textContent = label; return a; }
+trunc1 = (x) => (Math.floor(x * 10) / 10).toFixed(1)
+PS = ({background: "transparent", color: "var(--ink)", fontSize: "var(--chart-font)", fontFamily: "inherit", overflow: "visible"})
+fmtInt = (x) => Math.floor(x).toLocaleString("en-US")
+row = (g, v) => imm.find((d) => d.group_name === g && d.visit === v)
+```
+
+## Choose what to compare {#choose}
+
+```{ojs}
+viewof visit = Inputs.radio(new Map([["Day 29 (4 weeks after the shot)", "D29"], ["Day 57 (8 weeks)", "D57"]]), {label: "Visit", value: new URLSearchParams(location.search).get("visit") === "D57" ? "D57" : "D29"})
+viewof arms = Inputs.checkbox(["Vaccine", "Placebo"], {label: "Groups", value: ["Vaccine", "Placebo"]})
+```
+
+```{ojs}
+vRow = row("Vaccine", visit)
+visitLabel = visit === "D29" ? "Day 29" : "Day 57"
+filterNote = html`<p class="muted filter-note" aria-live="polite">Showing: <b>${visitLabel}</b>, ${arms.length ? arms.join(" and ") : "no groups (tick at least one group)"}.${arms.length < 2 ? " The other group is hidden by your choice." : ""}</p>`
+```
+
+## Who responded: 1 dot = 1 volunteer {#dots}
+
+```{ojs}
+unitData = {
+  const out = [];
+  for (const g of ["Vaccine", "Placebo"]) {
+    if (!arms.includes(g)) continue;
+    const rows = vols.filter((d) => d.group === g && d.visit === visit)
+      .sort((a, b) => (a.status === b.status ? 0 : a.status === "responded" ? -1 : b.status === "responded" ? 1 : a.status === "no result" ? 1 : -1));
+    rows.forEach((d, i) => out.push({...d, col: i % 10, rowi: Math.floor(i / 10)}));
+  }
+  return out;
+}
+unitChart = {
+  if (!arms.length) return html`<div class="meaning"><strong>Nothing to show</strong>No group is ticked. Tick "Vaccine" or "Placebo" above to see the dots.</div>`;
+  const narrow = width < 640;
+  const fill = (d) => d.group === "Vaccine" ? "var(--vac)" : "var(--pla)";
+  const tipText = (d) => `${d.subject_id} (${d.group})\n${d.status}` + (d.fold != null ? `\nDay 1: ${d.base.toFixed(1)} AU/mL\n${visitLabel}: ${d.post.toFixed(1)} AU/mL\nRise: ${d.fold}x` : "\nNo reportable result (held back)");
+  const facet = narrow ? {fy: "group"} : {fx: "group"};
+  const count = (g) => unitData.filter((d) => d.group === g).length;
+  const chart = Plot.plot({style: PS,
+    width: narrow ? Math.min(width, 420) : Math.min(width, 900),
+    height: narrow ? (arms.length * 250) : 280,
+    marginTop: 34, marginLeft: narrow ? 20 : 10, marginRight: 10,
+    x: {axis: null, domain: [-0.5, 9.5]},
+    y: {axis: null, domain: [-0.5, 5.5], reverse: true},
+    fx: {label: null, domain: arms, tickFormat: (g) => `${g}, ${count(g)}`},
+    fy: {label: null, domain: arms, tickFormat: (g) => `${g}, ${count(g)}`, axis: narrow ? "left" : null},
+    marks: [
+      Plot.dot(unitData, {x: "col", y: "rowi", ...facet, r: 9, strokeWidth: 2,
+        stroke: (d) => d.status === "no result" ? "var(--neutral-mark)" : fill(d),
+        strokeDasharray: (d) => d.status === "no result" ? "3,2" : null,
+        fill: "var(--bs-body-bg)", title: tipText}),
+      Plot.dot(unitData.filter((d) => d.status === "responded"), {x: "col", y: "rowi", ...facet, r: 9,
+        fill: fill, stroke: "var(--bs-body-bg)", strokeWidth: 1.5, title: tipText}),
+      Plot.text(unitData.filter((d) => d.status === "no result"), {x: "col", y: "rowi", ...facet, text: () => "–", fill: "var(--muted)"})
+    ]
+  });
+  chart.setAttribute("role", "img");
+  chart.setAttribute("aria-label", `Unit chart, ${visitLabel}. ` + arms.map((g) => { const r = row(g, visit); return `${g}: ${r.sero_n} of ${r.sero_total} responded`; }).join(". "));
+  return html`<figure class="card-x">
+    <figcaption><b>1 dot = 1 volunteer, ${visitLabel}.</b> Filled = responded (antibody rose at least 4 times). Hollow = did not respond. Dashed ring with a dash = no reportable result.</figcaption>
+    <div class="plot-wrap">${chart}</div>
+    <div class="unit-legend" aria-hidden="true">
+      <span><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="var(--vac)"/></svg>Vaccine, responded</span>
+      <span><svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--vac)" stroke-width="2"/></svg>Vaccine, did not respond</span>
+      <span><svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--pla)" stroke-width="2"/></svg>Placebo, did not respond</span>
+      <span><svg width="20" height="20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--neutral-mark)" stroke-width="2" stroke-dasharray="3,2"/></svg>No reportable result</span>
+    </div>
+  </figure>`;
+}
+```
+
+```{ojs}
+meaningBox = {
+  const v = row("Vaccine", visit), p = row("Placebo", visit);
+  const extra = visit === "D29"
+    ? `Two vaccine volunteers have no Day 29 result: their tubes were swapped on the plate (a test problem added on purpose), so the pipeline held both results back instead of guessing. They are shown, not hidden.`
+    : `By Day 57 fewer volunteers still meet the 4-times rule (${v.sero_n} of ${v.sero_total}). This matches antibody levels falling from their Day 29 peak in the chart below.`;
+  return html`<div class="meaning"><strong>What this means</strong>
+  In this SYNTHETIC trial, ${v.sero_n} of ${v.sero_total} vaccinated volunteers responded by ${visitLabel}, against ${p.sero_n} of ${p.sero_total} on placebo. ${extra}
+  <br><span class="muted">Uncertainty in plain words: with groups this small, the true vaccine response rate is likely between ${trunc1(v.sero_lcl)}% and ${trunc1(v.sero_ucl)}% (95% confidence interval); for placebo, between ${trunc1(p.sero_lcl)}% and ${trunc1(p.sero_ucl)}%.</span></div>`;
+}
+```
+
+## Typical antibody level by visit {#levels}
+
+```{ojs}
+html`<p class="muted">The vaccine group's level rose about ${trunc1(row("Vaccine", "D29").gmfr)} times from Day 1 to Day 29 (this rise is the ${term("gmfr", "GMFR")}). On Day 29 the vaccine group's typical level was about ${trunc1(row("Vaccine", "D29").gmt / row("Placebo", "D29").gmt)} times the placebo group's (this ratio is the GMR, geometric mean ratio). Units: AU/mL. Dot = typical level (${term("gmt", "GMT")}); whisker = 95% confidence interval. <b>Log scale</b>: each gridline step is a multiple, not an addition. The selected visit is outlined.</p>`
+```
+
+```{ojs}
+gmtChart = {
+  const d = imm.filter((r) => arms.includes(r.group_name));
+  if (!d.length) return html`<p class="muted">No group selected.</p>`;
+  const visits = ["D1", "D29", "D57"];
+  const chart = Plot.plot({style: PS,
+    width: Math.min(width, 820), height: 360, marginLeft: 70, marginRight: width < 520 ? 20 : 100, marginBottom: 40,
+    x: {domain: visits, label: null, tickFormat: (v) => ({D1: "Day 1", D29: "Day 29", D57: "Day 57"}[v]), padding: 0.4},
+    y: {type: "log", domain: [100, 10000], ticks: [100, 300, 1000, 3000, 10000], label: "AU/mL (log)", grid: true, tickFormat: (v) => v.toLocaleString("en-US")},
+    color: {domain: ["Vaccine", "Placebo"], range: ["var(--vac)", "var(--pla)"]},
+    marks: [
+      Plot.barY([visit], {x: (v) => v, y1: 100, y2: 10000, fill: "var(--accent)", fillOpacity: 0.08, stroke: "var(--accent)", strokeOpacity: 0.5, inset: -2}),
+      ...[["Vaccine", -8, "circle"], ["Placebo", 8, "square"]].flatMap(([g, off, sym]) => [
+        Plot.ruleX(d.filter((r) => r.group_name === g), {x: "visit", y1: "gmt_lcl", y2: "gmt_ucl", stroke: "group_name", strokeWidth: 3, dx: off}),
+        Plot.dot(d.filter((r) => r.group_name === g), {x: "visit", y: "gmt", fill: "group_name", symbol: sym, r: 7, stroke: "var(--bs-body-bg)", strokeWidth: 1.5, dx: off,
+          title: (r) => `${r.group_name}, ${r.visit}\nGMT ${fmtInt(r.gmt)} AU/mL\n95% CI ${fmtInt(r.gmt_lcl)} to ${fmtInt(r.gmt_ucl)}\nn = ${r.n}`})
+      ]),
+      width < 520 ? null : Plot.text(d.filter((r) => r.visit === "D57"), {x: "visit", y: "gmt", text: (r) => `${r.group_name}`, dx: 22, textAnchor: "start", fill: "var(--ink)", fontWeight: 600})
+    ]
+  });
+  chart.setAttribute("role", "img");
+  chart.setAttribute("aria-label", "Typical antibody level by visit, log scale. " + d.map((r) => `${r.group_name} ${r.visit}: ${fmtInt(r.gmt)} AU/mL`).join("; "));
+  return html`<div class="card-x"><div class="plot-wrap">${chart}</div>
+  <div class="unit-legend" aria-hidden="true"><span><svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="var(--vac)"/></svg>Vaccine (circle)</span><span><svg width="16" height="16"><rect x="2" y="2" width="12" height="12" fill="var(--pla)"/></svg>Placebo (square)</span></div>
+  <details class="table-twin"><summary>View as table</summary>
+  <div class="table-scroll"><table class="table-x"><caption>Typical antibody level (GMT) by group and visit</caption><thead><tr><th scope="col">Group</th><th scope="col">Visit</th><th scope="col" class="num">n</th><th scope="col" class="num">GMT (AU/mL)</th><th scope="col" class="num">95% CI</th><th scope="col" class="num">GMFR</th><th scope="col" class="num">Responded</th></tr></thead>
+  <tbody>${d.map((r) => html`<tr class="${r.visit === visit ? "fw-semibold" : ""}"><td>${r.group_name}</td><td>${r.visit}</td><td class="num">${r.n}</td><td class="num">${r.gmt.toFixed(1)}</td><td class="num">${r.gmt_lcl.toFixed(1)} – ${r.gmt_ucl.toFixed(1)}</td><td class="num">${r.gmfr == null ? "—" : r.gmfr.toFixed(2) + "x"}</td><td class="num">${r.sero_n == null ? "— (baseline)" : `${r.sero_n} of ${r.sero_total} (${trunc1(r.sero_pct)}%)`}</td></tr>`)}</tbody></table></div>
+  <p class="muted">Source: <code>marts.mart_immunogenicity</code> (docs/METRICS.md sections 1.1–1.3). GMT and GMFR use a t-based 95% interval on log10 values; response uses Clopper-Pearson. GMT is a geometric mean, so one very high volunteer has less effect on it than on an ordinary average. Values shown to 1 decimal; headline numbers are truncated, never rounded up.</p></details></div>`;
+}
+```
+
+```{ojs}
+volTable = html`<details class="table-twin"><summary>View the dot chart as a table (${unitData.length} volunteers)</summary>
+<div class="table-scroll" style="max-height:420px"><table class="table-x"><caption>Every volunteer at ${visitLabel}</caption><thead><tr><th scope="col">Volunteer</th><th scope="col">Group</th><th scope="col" class="num">Day 1 (AU/mL)</th><th scope="col" class="num">${visitLabel} (AU/mL)</th><th scope="col" class="num">Rise</th><th scope="col">Result</th></tr></thead>
+<tbody>${unitData.map((d) => html`<tr><td>${d.subject_id}</td><td>${d.group}</td><td class="num">${d.base == null ? "—" : d.base.toFixed(1)}</td><td class="num">${d.post == null ? "—" : d.post.toFixed(1)}</td><td class="num">${d.fold == null ? "—" : d.fold + "x"}</td><td>${d.status}</td></tr>`)}</tbody></table></div>
+<p class="muted">Per-volunteer results from <code>core.fct_reportable_result</code>, classified with the pipeline's own <code>is_seroresponder()</code>. The build script checks that the counts equal <code>mart_immunogenicity</code> for every group and visit. Values below the LLOQ are set to half the LLOQ (22.86 AU/mL), per docs/METRICS.md.</p></details>`
+```
+
+::: {.honest}
+**Honesty notes.**
+
+- All data is [SYNTHETIC](glossary.qmd#synthetic){.term} (seed 42). The trial, the assay and the thresholds are
+  invented for a portfolio demonstration.
+- Thresholds marked "demo default" in the project's METRICS are not checked against any real protocol.
+- This is **not a validated system** and makes no [GxP](glossary.qmd#gxp){.term} or
+  [21 CFR Part 11](glossary.qmd#part-11){.term} compliance claim.
+- Every number on this page is read from `docs/results.json` and `data/marts` at build time.
+:::

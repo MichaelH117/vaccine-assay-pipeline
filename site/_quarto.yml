@@ -1,0 +1,50 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - data/*.json
+
+website:
+  title: "Vaccine Assay Pipeline"
+  description: "SYNTHETIC vaccine-trial assay data through a mini-LIMS, 4PL ELISA curves, plate QC and a detection scorecard."
+  site-url: "https://michaelh117.github.io/vaccine-assay-pipeline/"
+  page-navigation: true
+  bread-crumbs: false
+  navbar:
+    title: "Vaccine Assay Pipeline"
+    collapse-below: lg
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: results.qmd
+        text: Vaccine results
+      - href: tube.qmd
+        text: Follow one tube
+      - href: qc.qmd
+        text: Lab QC
+      - href: scorecard.qmd
+        text: Problems caught
+      - href: glossary.qmd
+        text: Glossary
+      - href: about.qmd
+        text: How it works
+  page-footer:
+    left: "SYNTHETIC data only. A portfolio demonstration, not a validated system."
+    right: "Built with Quarto + Observable Plot from `docs/results.json` and `data/marts`."
+
+format:
+  html:
+    theme:
+      light: [cosmo, theme.scss, theme-light.scss]
+      dark: [cosmo, theme.scss, theme-dark.scss]
+    respect-user-color-scheme: true
+    toc: false
+    page-layout: full
+    smooth-scroll: false
+    link-external-newwindow: true
+    anchor-sections: false
+    include-before-body: _banner.html
+    code-copy: false
+    include-after-body:
+      - text: '<script src="assets/site.js" defer></script><script src="assets/story.js" defer></script>'
+    css: assets/site.css

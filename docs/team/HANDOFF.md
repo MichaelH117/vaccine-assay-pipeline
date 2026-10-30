@@ -295,3 +295,63 @@ dbt: {'nodes': 145, 'passed': 145, 'warn': 0, 'failed': 0, 'models': 34, 'tests'
 ```
 README fixes from SIGNOFF: install time now matches the measured 4.3 min, and CI is described as configured but not yet run. The git clone URL stays because it will resolve once Michael approves the push.
 Still open: refresh TEST_PLAN.md counts (QA); hand-check the other 8 KPI formulas (AC-9.2).
+
+## 2026-10-30, Design Lead: Quarto site (pharma theme), not committed
+- **What I did:** Built a 6-page Quarto + Observable Plot static site in `site/` (renders to `site/_site`, GitHub Pages ready, not published): Overview (status badge, 5 KPI tiles with takeaway titles, "1 dot = 1 volunteer" unit chart with guess-then-reveal, visit/arm cross-filter), Follow one tube (play/pause stepper with stored vs recomputed SHA-256 per custody step; tamper switch shows the real `audit.chain_verify` / `record_reconciliation` output for INJ-7 and INJ-11, plus a labelled replay of the INJ-7 row before the edit), Lab QC (plate wall, rule slicer, 96-well map, 4PL curve with LLOQ–ULOQ band in plain words), Did we catch it? (13 one-line stories, false-alarm counts), Glossary (33 sourced terms; every acronym on every page auto-links with hover+focus tooltips), How it works (diagram, method, honesty notes). Calm clinical light theme with a selected dark mode; SYNTHETIC banner on every page.
+- **Data:** `site/build_data.py` writes 7 JSON files (335 KB) from results.json, the marts and the read-only DuckDB. It reuses `is_seroresponder()` and `compute_row_hash()` and asserts (a) per-volunteer counts = `mart_immunogenicity` sero_n/sero_total for every group x visit and (b) the rebuilt pre-tamper INJ-7 row reproduces the stored hash. Both passed. No DuckDB-WASM.
+- **Checks run (real):** `quarto render site` OK (6 of 6 pages, no warnings after all pages existed); headless Chrome DOM check found 0 OJS runtime errors on all 6 pages; page `scrollWidth` = 375 at a 375 px viewport on all 6 pages; WCAG contrast computed for every token pair (all text ≥ 4.5:1 after one fix); dataviz palette validator passed blue/orange in light and dark. Screenshots: `docs/img/site/*-{1440,375}.png` (12 files, 3.5 MB).
+- **Files changed:** `site/` (new: _quarto.yml, 6 .qmd, theme*.scss, assets/site.css, assets/site.js, _banner.html, _status.qmd, build_data.py, data/*.json), `docs/img/site/` (new), `docs/team/DESIGN_REVIEW.md` (new), README.md (Interactive site section + screenshot table), .gitignore (`!site/data/`, ignore `site/_site/`, `site/.quarto/`), this file.
+- **Open issues:** page titles are static text (true for seed 42); dot/well tooltips are mouse-only (table twins cover keyboard users); Observable Plot loads from the jsDelivr CDN; no real screen-reader test; 375 px screenshots come from an iframe harness in headless Chrome, not a phone.
+- **Next:** principal-engineer (showcase README/case-study link check), then Michael to review and commit.
+
+## 2026-10-30: Product Owner (SPEC v2, "real-industry" upgrade)
+- **What I did:** Wrote `docs/team/SPEC_v2.md` from the vaccine R&D research file, SPEC v1, SIGNOFF and USER_TESTING. It has the question, 5 personas (U1-U5), an ontology/action table, PR/FAQ, 7 stories (US-13 to US-19, 50 ACs), new INJ-12..14 plus planted outcomes kept out of recall, four risks, cut line, out-of-scope list, job postings, and decisions D6-D10.
+- **Stories:** US-13 vendor importers + detector (M), US-14 plate-map template + shifted-column check (S), US-15 20-serotype multiplex + bead-count QC (M), US-16 validation-style summary (S), US-17 NI / sensitivity / lot consistency (M), US-18 stage-gate + exec scorecard feed (S), US-19 regression + honesty (M).
+- **Honesty:** no instrument-compatibility, validation or M10 claims (grep test AC-16.7); Prevnar 20 numbers labelled PUBLIC REFERENCE with the FDA memo URL; bead-count threshold marked UNVERIFIED demo default; IgG used where the real endpoint was OPA, stated in the FAQ.
+- **Checks run:** none (document only). I did not reopen the job-posting URLs; they are marked as such.
+- **Files changed:** docs/team/SPEC_v2.md (new), this file. Nothing under `site/` touched.
+- **Open:** Michael decides D6-D10. Size is tight for 2 days; the cut order is in section 9.
+- **Next:** tech-lead (DESIGN/TASKS for v2), after Michael's decisions.
+
+## 2026-10-30 - ux-researcher (UX Researcher / Audience Lead)
+- Did: aggregate audience research for 9 audiences (BLS CPS 2025 age/sex, NIDCD, NPWS, NCPA, Spencer Stuart, ESA/IGDA/GDC, DocSend, Ladders, Sapio, NN/g, Stanford), with design rules, rule-of-cool table, and synthetic persona inputs.
+- Files: C:\Users\stimp\projects\dev-team\research\audience-data-2026-10-30.md (new). No product files changed.
+- Checks: web sources fetched/searched; unsourced items marked UNVERIFIED.
+- Open: device data, owner/F&I ages, game a11y guidelines not yet sourced.
+- Next: design-lead (apply type/motion/color rules); ux-researcher to fold into PERSONAS.md.
+
+## 2026-10-30, Design Lead: overview rebuilt as a "production story" + all 19 user-testing fixes, not committed
+- **What I did:**
+  - `index.qmd` is now a scroll story for a VP or board member. Above the fold: "On track", 56 of 58 vs 0 of 60,
+    13 of 13 caught with 0 false plate rejections, "Tamper detected ✓" at row 2,130, each with a source link. Then
+    6 chapters headed by their answers: where lab testing sits in a real program (Prevnar 20 FDA timeline, labelled
+    public reference data), rising-antibody dots (pinned, 5 steps), a plate reader lit by real OD, 13 of 13 caught,
+    a padlock chain that opens at row 2,130, and the decision being asked (status + confidence + caveat). It has a
+    chapter rail, "Skip the story", count-ups, a Pause motion button and a still version under reduced motion.
+  - The guess game was removed (Michael). The visit/group explorer moved to the new `results.qmd`.
+  - All 19 USER_TESTING fixes are done (table in DESIGN_REVIEW.md), including the animation choreography.
+  - `build_data.py` now also writes `site/_variables.yml` and asserts that the "On track" verdict holds.
+- **For analytics-engineer (science wording; fixed on the site text only):**
+  1. "stronger dilution" should read "higher dilution (for example 1 in 1,000)". Check the generator/scorecard
+     descriptions and docs.
+  2. INJ-6 is a duplicate %CV rule (CV > 20%), not "45% / disagreement". The real CVs are 50.5, 51.2 and 51.8%.
+     Fix the INJ-6 wording wherever it appears outside the site (generator description, METRICS, docs).
+- **Checks run (real):**
+  - `build_data.py`: per-volunteer counts match the mart; pre-tamper seal reproduced; the 4 verdict asserts passed.
+  - `quarto render site --output-dir _build`: 7 of 7 pages, no warnings, copied into `_site`. Plain
+    `quarto render site` failed with os error 32 because the running server holds `_site` open. It worked once
+    rendered elsewhere; the server is still up.
+  - Headless Chrome, 42 runs (7 pages x 1440, 1280x720, 640, 375, forced-colors, reduced-motion): 0 OJS errors,
+    0 overflow, 0 copy buttons, skip link on all, 0 SVG text under 14 px, 0 unnamed inputs, 0 uncaptioned tables.
+- **Files changed:** site/index.qmd (rewritten), site/results.qmd (new), site/assets/story.js (new),
+  site/assets/site.css, site/assets/site.js, site/_quarto.yml, site/_banner.html, site/_status.qmd,
+  site/theme-light.scss, site/theme-dark.scss, site/qc.qmd, site/scorecard.qmd, site/tube.qmd, site/about.qmd,
+  site/glossary.qmd, site/data/glossary.json, site/build_data.py, site/_variables.yml (generated),
+  docs/img/site/*.png, README.md, docs/team/DESIGN_REVIEW.md, this file.
+- **Open:**
+  - No real screen-reader or phone test.
+  - Takeaway titles were not restated by a reader.
+  - Story order and palette are still Michael's call.
+  - If you want `site/_variables.yml` to stay out of git, add it to .gitignore. It is regenerated by
+    build_data.py, but the site needs it to render.
+- **Next:** ux-researcher (re-run the panel and the 5-second test), then analytics-engineer for the 2 wording items.

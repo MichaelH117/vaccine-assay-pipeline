@@ -1,0 +1,73 @@
+---
+title: "How it works: one command, eight steps, every number traceable"
+description: "Pipeline diagram, method and honesty notes."
+execute:
+  echo: false
+---
+
+{{< include _status.qmd >}}
+
+::: {.lede}
+`python -m pipeline.run` takes the SYNTHETIC trial from raw files to this site in about 40 seconds on a laptop. Each
+step writes to a local DuckDB database, and every change to a lab record goes through an
+[audit trail](glossary.qmd#audit-trail){.term}.
+:::
+
+## The pipeline
+
+<ol class="flow" aria-label="Pipeline steps, in order">
+<li><b>1. Generate</b><span>A seeded generator invents 120 volunteers, 360 samples, 13 plate-reader files, and adds 13 test problems on purpose, listed in a hidden answer key. SYNTHETIC.</span></li>
+<li><b>2. Load the LIMS</b><span>Volunteers, samples and custody steps go into a mini-<a class="term" href="glossary.html#lims">LIMS</a>. Each insert writes a sealed, hash-chained audit row.</span></li>
+<li><b>3. Read the plates</b><span>Plate-reader files are parsed and given a SHA-256 checksum. Corrupt files are rejected and logged, not silently skipped.</span></li>
+<li><b>4. Fit the curves</b><span>A <a class="term" href="glossary.html#4pl">4PL</a> curve per plate from its 8 standards; the valid range (<a class="term" href="glossary.html#lloq">LLOQ</a> to <a class="term" href="glossary.html#uloq">ULOQ</a>) is set from standards that read back within 80–120%.</span></li>
+<li><b>5. Quality checks</b><span>Plate rules (fit, standards, controls, blanks) and sample rules (duplicates, range, identity). A failed plate is rejected whole.</span></li>
+<li><b>6. Pick one result per sample</b><span>The latest run on an accepted plate with no blocking flag. Everything else goes on the <a class="term" href="glossary.html#reassay">re-assay</a> list.</span></li>
+<li><b>7. Integrity checks</b><span>Verify the hash chain, compare every live record with its audit row, check custody gaps and late entries (<a class="term" href="glossary.html#alcoa">ALCOA+</a>).</span></li>
+<li><b>8. Marts and scorecard</b><span><a class="term" href="glossary.html#dbt">dbt</a> builds the report tables and runs 111 data tests; the scorecard compares flags with the answer key.</span></li>
+</ol>
+
+Then `site/build_data.py` turns the outputs into small JSON files, and Quarto builds this static site. The browser
+loads about 0.35 MB of data, with no database.
+
+## Method, in brief
+
+- **Antibody level.** ELISA readings ([OD](glossary.qmd#od){.term}) are turned into AU/mL with the plate's
+  [4PL](glossary.qmd#4pl){.term} curve, times the dilution. Results below the LLOQ count as half the LLOQ
+  (22.86 AU/mL) in averages.
+- **Typical level ([GMT](glossary.qmd#gmt){.term}).** A geometric mean with a 95% [CI](glossary.qmd#ci){.term}
+  (t-based, on log10 values).
+- **Rise ([GMFR](glossary.qmd#gmfr){.term}).** Each volunteer's later level divided by their Day 1 level, then
+  geometric-averaged. Only volunteers with both results count.
+- **Response ([seroresponse](glossary.qmd#seroresponse){.term}).** At least a 4-times rise from Day 1 (or at least
+  4 times the LLOQ if Day 1 was too low to measure), with an exact
+  [Clopper-Pearson](glossary.qmd#clopper-pearson){.term} 95% range.
+- **Full definitions** with test cases verified by hand calculation are in `docs/METRICS.md`; architecture decisions in
+  `docs/team/adr/`.
+
+## How this site is built
+
+- **Quarto + Observable Plot**, static HTML, publishable to GitHub Pages. No server and no database in the browser.
+- **Every number** is read at build time from `docs/results.json`, `data/marts/*.csv` and the read-only DuckDB
+  warehouse by `site/build_data.py`. The script re-checks that per-volunteer results add up to the published mart and
+  that the rebuilt pre-tamper audit row reproduces its stored seal; if not, the build stops.
+- **Accessibility.** Every chart has a "view as table" twin. Color is never the only signal (✓/✗ icons, filled vs
+  hollow, letters on wells). Text meets WCAG AA contrast in light and dark mode. Animation respects
+  "reduce motion", the play button has pause, and everything works with the keyboard.
+- **Rebuild:** `.venv\Scripts\python -m pipeline.run`, then `.venv\Scripts\python site\build_data.py`, then
+  `quarto render site`.
+
+## Honesty notes
+
+::: {.honest}
+- **SYNTHETIC data.** No real volunteer, trial, lab, company or patient. The assay ("Anti-Antigen X IgG ELISA") is
+  invented.
+- **Not a validated system.** This is a portfolio demonstration of [GxP](glossary.qmd#gxp){.term}-style practice.
+  It makes no [21 CFR Part 11](glossary.qmd#part-11){.term} or [GCLP](glossary.qmd#gclp){.term} compliance claim.
+  The validation pack in `docs/validation/` is a practice exercise.
+- **Demo thresholds.** QC limits in `config/qc_rules.yaml` are demo defaults, not checked against any real assay
+  method or ICH M10.
+- **Detection, not prevention.** Anyone with the database file can edit it; the checks only detect edits.
+- **Self-graded.** The same team added the test problems and wrote the checks. 13 of 13 shows the checks work as
+  designed, not that they would catch every real error.
+- **Numbers are truncated, never rounded up**, in headlines; tables show more decimals.
+:::

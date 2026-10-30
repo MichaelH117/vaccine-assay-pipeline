@@ -1,0 +1,45 @@
+---
+title: "Glossary: the lab words on this site, in plain English"
+description: "Pharma and vaccine-lab terms used on this site, each with its source."
+execute:
+  echo: false
+---
+
+{{< include _status.qmd >}}
+
+::: {.lede}
+Every dotted-underlined word on this site links here. Hover it, or move to it with the keyboard, for a short
+definition. Definitions are short on purpose. Each one names its source, and says plainly when there is none yet.
+:::
+
+```{ojs}
+GL = FileAttachment("data/glossary.json").json()
+viewof q = Inputs.search(GL.terms, {placeholder: "Search terms, e.g. LLOQ", label: "Find a term", columns: ["term", "full", "def"]})
+```
+
+```{ojs}
+SRC_TITLE = ({
+  "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/data-integrity-and-compliance-drug-cgmp-questions-and-answers": "FDA, Data Integrity and Compliance With Drug CGMP: Questions and Answers",
+  "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-11": "21 CFR Part 11 (eCFR)",
+  "https://moodle2.units.it/pluginfile.php/466375/mod_resource/content/0/Uncertainty_Visualization_Padilla_Kay_Hullman_2020.pdf": "Padilla, Kay and Hullman, Uncertainty Visualization (2020)",
+  "https://docs.getdbt.com/": "dbt documentation",
+  "https://www.ncbi.nlm.nih.gov/books/NBK555922/": "NCBI Bookshelf, Enzyme Linked Immunosorbent Assay (StatPearls)",
+  "https://www.fda.gov/science-research/clinical-trials-and-human-subject-protection": "FDA, Clinical Trials and Human Subject Protection",
+  "https://www.fda.gov/media/70858/download": "FDA, Bioanalytical Method Validation guidance"
+})
+tagWord = ({checked: "Source checked by the research seat (2026-10-30)", reference: "Standard reference, named but not re-opened for this site", project: "This project's own definition", unverified: "Plain-English wording, no external source yet"})
+glossList = html`<p class="muted">${q.length} of ${GL.terms.length} terms.</p><dl class="gloss-list">${q.map((t) => html`
+  <dt id="${t.id}">${t.term}${t.full && t.full !== t.term ? html` <span class="muted" style="font-weight:400">· ${t.full}</span>` : ""}</dt>
+  <dd>${t.def}<br><span class="src">${tagWord[t.tag]}${t.src ? html`: ${t.src.startsWith("http") ? html`<a href="${t.src}" rel="noopener">${SRC_TITLE[t.src] || new URL(t.src).hostname.replace(/^www\./, "")}</a>` : html`<code>${t.src}</code>`}` : ""}</span></dd>`)}</dl>`
+```
+
+```{ojs}
+// Jump to the #anchor after the list renders (it is built in the browser).
+{ glossList; const h = decodeURIComponent(location.hash.slice(1)); if (h) { const el = document.getElementById(h); if (el) el.scrollIntoView(); } return html``; }
+```
+
+::: {.honest}
+**Sources.** Adapted from the team's research glossary (`dev-team/research/industry-tools-and-plain-english-2026-10-30.md`,
+section 3A) and this project's `docs/METRICS.md` and `config/qc_rules.yaml`. Definitions are simplified for a general
+reader and are not regulatory text.
+:::

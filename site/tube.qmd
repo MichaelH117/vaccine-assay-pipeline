@@ -1,0 +1,159 @@
+---
+title: "Follow one tube: its digital seal breaks exactly where we tampered"
+description: "Press play to walk one SYNTHETIC sample through its chain of custody, with the audit hash at every step."
+execute:
+  echo: false
+---
+
+{{< include _status.qmd >}}
+
+::: {.lede}
+Every time a tube changes hands, the lab system writes a row in the [audit trail](glossary.qmd#audit-trail){.term}
+and seals it with a [hash](glossary.qmd#hash){.term}: a 64-character code computed from the row *plus the previous row's
+seal*. Change one character anywhere and the seals stop matching. Press **Play** to follow one tube,
+then turn on the **tamper** switch.
+:::
+
+```{ojs}
+T = FileAttachment("data/tubes.json").json()
+M = FileAttachment("data/meta.json").json()
+PS = ({background: "transparent", color: "var(--ink)"})
+users = new Map(T.users.map((u) => [u.user_id, u.display_name]))
+short = (h) => h ? `${h.slice(0, 10)}…${h.slice(-6)}` : "—"
+when = (s) => s ? s.replace("T", " ").slice(0, 16) : "—"
+reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+```
+
+## Play the tube's journey {#play}
+
+```{ojs}
+viewof which = Inputs.radio(new Map([
+  ["Tube SMP-00180: someone edited its audit row (test problem INJ-7)", 0],
+  ["Tube SMP-00127: someone edited the record itself, not the audit row (test problem INJ-11)", 1]
+]), {label: "Pick a tube", value: +(new URLSearchParams(location.search).get("tube") || 0)})
+tube = T.tubes[which]
+viewof tamper = Inputs.toggle({label: tube.inj_type === "INJ-7" ? "Show the tamper (real data)" : "Compare record vs audit row", value: new URLSearchParams(location.search).has("tamper")})
+```
+
+```{ojs}
+// The state of each step under the current switch. Every hash shown is a real value from the warehouse or
+// recomputed at build time by pipeline.audit.compute_row_hash (the same function verify_chain uses).
+steps = tube.steps.map((s) => {
+  let at = s.audit_performed_at, by = s.audit_performed_by, recomputed = s.recomputed_hash, seal = s.seal_ok;
+  let recordOk = true, replay = false;
+  if (tube.inj_type === "INJ-7" && s.before_tamper && !tamper) {
+    at = s.before_tamper.performed_at; recomputed = s.before_tamper.recomputed_hash; seal = true; replay = true;
+  }
+  if (tube.inj_type === "INJ-11" && tamper) recordOk = s.record_matches_audit;
+  return {...s, at, by, recomputed, seal, recordOk, replay, good: seal && s.link_ok && recordOk};
+})
+```
+
+```{ojs}
+player = {
+  const key = `tube-${which}`;
+  window.__tubeStep = window.__tubeStep || {};
+  let i = window.__tubeStep[key] ?? +(new URLSearchParams(location.search).get("step") || 0), timer = null;
+  const root = html`<div class="card-x"></div>`;
+  const ctrl = html`<div class="controls" role="group" aria-label="Playback">
+    <button class="btn-x primary" data-a="play" aria-pressed="false">▶ Play</button>
+    <button class="btn-x" data-a="prev" aria-label="Previous step">◀ Back</button>
+    <button class="btn-x" data-a="next" aria-label="Next step">Next ▶</button>
+    <button class="btn-x" data-a="reset">↺ Start again</button></div>`;
+  const list = html`<ol class="stepper" aria-label="Custody steps"></ol>`;
+  const detail = html`<div aria-live="polite"></div>`;
+  root.append(ctrl, list, detail);
+  const playBtn = ctrl.querySelector('[data-a="play"]');
+
+  function stop() { if (timer) clearInterval(timer); timer = null; playBtn.textContent = "▶ Play"; playBtn.setAttribute("aria-pressed", "false"); }
+  function go(n) { i = Math.max(0, Math.min(steps.length - 1, n)); window.__tubeStep[key] = i; draw(); }
+  function draw() {
+    list.innerHTML = "";
+    steps.forEach((s, k) => {
+      const done = k <= i;
+      const cls = !done ? "future" : s.good ? "ok" : "bad";
+      const ic = !done ? "○" : s.good ? "✓" : "✗";
+      const word = !done ? "not reached yet" : s.good ? "seal matches" : (!s.seal ? "seal broken" : "record changed");
+      const b = html`<button class="${cls} ${k === i ? "current" : ""}" aria-current="${k === i ? "step" : "false"}"
+        aria-label="Step ${k + 1}, ${s.step}: ${word}"><span class="ic" aria-hidden="true">${ic}</span>
+        <span class="lb">${k + 1}. ${s.step}</span><span class="sm">${word}</span></button>`;
+      b.onclick = () => { stop(); go(k); };
+      list.append(html`<li>${b}</li>`);
+    });
+    const s = steps[i];
+    const who = users.get(s.by) || s.by;
+    const where = s.plate_id ? `${s.location}, ${s.plate_id} well ${s.well}` : s.location;
+    let verdict;
+    if (!s.seal) verdict = html`<p class="bad-t">✗ Seal broken. Recomputing this row's seal gives a different value from the one stored when it was written. Someone changed the row after it was sealed.</p>`;
+    else if (!s.recordOk) verdict = html`<p class="bad-t">✗ The live record no longer matches its audit row: <b>performed by</b> now says ${users.get(s.live_performed_by)} (${s.live_performed_by}), but the sealed audit row says ${users.get(s.audit_performed_by)} (${s.audit_performed_by}). The seal itself still matches, because the audit row was not touched. Only the record check can see this.</p>`;
+    else verdict = html`<p class="ok-t">✓ Seal matches: recomputed seal = stored seal, and it links to the row before.</p>`;
+    detail.innerHTML = "";
+    detail.append(html`<h3 style="margin-top:.5rem">Step ${i + 1} of ${steps.length}: ${s.step}</h3>
+      <p>${s.step[0].toUpperCase() + s.step.slice(1)} at <b>${where}</b> by <b>${who}</b> on <b>${when(s.at)}</b>.</p>
+      ${s.replay ? html`<p class="chip warn" style="white-space:normal">Replay: this row as first written. We rebuilt it by undoing the generator's documented edit (moved one day earlier). Its recomputed seal equals the stored one, which proves this is the original.</p>` : ""}
+      ${verdict}
+      <dl class="hash-grid">
+        <dt>Audit row</dt><dd>#${s.audit_seq} (event ${s.event_id})</dd>
+        <dt>Previous row's seal</dt><dd class="hash" title="${s.prev_hash}">${short(s.prev_hash)} ${s.link_ok ? html`<span class="ok-t">✓ links</span>` : html`<span class="bad-t">✗ gap</span>`}</dd>
+        <dt>Seal stored when written</dt><dd class="hash" title="${s.row_hash}">${short(s.row_hash)}</dd>
+        <dt>Seal recomputed now</dt><dd class="hash" title="${s.recomputed}">${short(s.recomputed)} ${s.seal ? html`<span class="ok-t">✓ same</span>` : html`<span class="bad-t">✗ different</span>`}</dd>
+      </dl>`);
+    if (i === steps.length - 1 && !tamper) detail.append(html`<p class="meaning"><strong>Next</strong>Now turn on the switch above to see what the pipeline found.</p>`);
+    ctrl.querySelector('[data-a="prev"]').disabled = i === 0;
+    ctrl.querySelector('[data-a="next"]').disabled = i === steps.length - 1;
+  }
+  ctrl.addEventListener("click", (e) => {
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "play") {
+      if (timer) return stop();
+      if (i === steps.length - 1) go(0);
+      playBtn.textContent = "❚❚ Pause"; playBtn.setAttribute("aria-pressed", "true");
+      timer = setInterval(() => { if (i >= steps.length - 1) return stop(); go(i + 1); }, reduceMotion ? 2600 : 1600);
+    }
+    if (a === "prev") { stop(); go(i - 1); }
+    if (a === "next") { stop(); go(i + 1); }
+    if (a === "reset") { stop(); go(0); }
+  });
+  invalidation.then(stop);
+  draw();
+  return root;
+}
+```
+
+## What the real check said {#check}
+
+```{ojs}
+verifyPanel = {
+  const cv = T.chain_verify;
+  const rec = T.record_reconciliation.filter((r) => r.record_key === tube.event_id);
+  if (!tamper) return html`<div class="honest"><b>What the real check said:</b> turn the switch on to see the pipeline's actual output for this tube.</div>`;
+  if (tube.inj_type === "INJ-7") return html`<div class="card-x"><h3 style="margin-top:0">The real verify output (<code>audit.chain_verify</code>)</h3>
+    <div class="verify-out">ok                = ${cv.ok}
+rows_checked      = ${cv.rows_checked.toLocaleString("en-US")}
+first_broken_seq  = ${cv.first_broken_seq}
+broken_table_name = ${cv.broken_table_name}
+broken_record_key = ${cv.broken_record_key}
+broken_check      = ${cv.broken_check}</div>
+    <p class="meaning"><strong>What this means</strong>The check walks the chain from row 1 and stops at the first row whose seal does not match. It stopped at row ${cv.first_broken_seq}, the exact row we tampered with. Rows after it (${(cv.first_broken_seq + 1).toLocaleString("en-US")} to ${M.audit_rows_total.toLocaleString("en-US")}) were not chain-checked in this run, so they are treated as untrusted until the break is investigated. The record check also flagged this event: ${rec.map((r) => r.detail).join("; ")}.</p></div>`;
+  return html`<div class="card-x"><h3 style="margin-top:0">The real reconciliation output (<code>audit.record_reconciliation</code>)</h3>
+    <div class="verify-out">${rec.map((r) => `issue      = ${r.issue}\ntable_name = ${r.table_name}\nrecord_key = ${r.record_key}\naudit_seq  = ${r.audit_seq}\ndetail     = ${r.detail}`).join("\n\n")}</div>
+    <p class="meaning"><strong>What this means</strong>This is the more realistic fraud: changing who did the work by editing the record directly and leaving the audit trail alone. Every seal still matches, so a hash chain alone would miss it. The pipeline also compares each live record with its last audit row, and that check caught it (flag RECORD_MISMATCH). The first version of this project missed this; code review found the gap (see About).</p></div>`;
+}
+```
+
+```{ojs}
+tubeTable = html`<details class="table-twin"><summary>View all steps as a table (no animation)</summary>
+<div class="table-scroll"><table class="table-x"><thead><tr><th>#</th><th>Step</th><th>When</th><th>Who</th><th>Where</th><th>Audit row</th><th>Stored seal</th><th>Recomputed seal</th><th>Result</th></tr></thead>
+<tbody>${steps.map((s, k) => html`<tr><td>${k + 1}</td><td>${s.step}</td><td>${when(s.at)}</td><td>${s.by}${tube.inj_type === "INJ-11" && tamper && !s.recordOk ? ` (live record: ${s.live_performed_by})` : ""}</td><td>${s.location}</td><td>${s.audit_seq}</td><td class="hash">${short(s.row_hash)}</td><td class="hash">${short(s.recomputed)}</td><td>${s.good ? "✓ matches" : (!s.seal ? "✗ seal broken" : "✗ record changed")}</td></tr>`)}</tbody></table></div>
+<p class="muted">Hashes are SHA-256 over the row's columns plus the previous row's hash (<code>pipeline/audit.py compute_row_hash</code>). Hover a shortened hash above to see all 64 characters. Source: <code>audit.audit_log</code>, <code>lims.custody_events</code>; prepared by <code>site/build_data.py</code>, which stops the build if the reconstructed pre-tamper row does not reproduce the stored seal.</p></details>`
+```
+
+::: {.honest}
+**Honesty notes.** Both tampers were added on purpose by `generator/tamper.py` on [SYNTHETIC](glossary.qmd#synthetic){.term}
+data. "Tamper on" shows the database exactly as it is now. "Tamper off" for tube SMP-00180 is a clearly labelled
+**replay** of the row before the edit; for SMP-00127 it shows the sealed audit rows only. This demonstrates the
+idea behind an [ALCOA+](glossary.qmd#alcoa){.term} audit trail; it is not a [21 CFR Part 11](glossary.qmd#part-11){.term}
+validated system. It **detects** tampering; it cannot **prevent** it. A forger who rewrites the row, its audit
+payload, the chain and the checkpoints would pass every in-database check, and in this demo the external anchor file
+sits next to the database, so it protects one run only (RISK_REGISTER R-02, KNOWN_ISSUES KI-03).
+:::
