@@ -129,7 +129,7 @@ gaps. Before the push, fix these (no code changes needed):
 4. SPEC.md still says "DRAFT v1, waiting for Michael". Mark it final and note that INJ-11 became a required type.
 5. Make the README fixes listed below.
 
-## Interview talking points (Pfizer Pearl River clinical immunology / vaccine R&D data)
+## Interview talking points (clinical immunology / vaccine R&D data)
 
 1. **"My QC rejected exactly the bad plates and no others."** Each plate gets its own 4PL fit. The working range
    comes from the longest contiguous run of standards with 80-120% back-calculated recovery, and nothing outside it

@@ -3,7 +3,7 @@
 Owner: Product Owner seat. Status: DRAFT v1, waiting for Michael's call on the open decisions (section 8).
 Date: 2026-10-29. Hands off to: tech-lead.
 
-All data is synthetic. Nothing here describes or uses real Pfizer, patient, trial, or DOWC data.
+All data is synthetic. Nothing here describes or uses real patient or trial data.
 
 ---
 
@@ -25,7 +25,7 @@ Run `python -m pipeline.run` (exact command set by DevOps) and open the dashboar
 
 ### FAQ
 
-**Q: Who is this for?** Hiring managers for clinical immunology and vaccine R&D data roles (Pfizer Pearl River first, then Merck, Aquestive, Veeva). It shows lab-side data skills: LIMS data, assay math, GxP data integrity, SQL/dbt, and reporting.
+**Q: Who is this for?** Hiring managers for clinical immunology and vaccine R&D data roles. It shows lab-side data skills: LIMS data, assay math, GxP data integrity, SQL/dbt, and reporting.
 
 **Q: How is it different from Michael's clinical-data-review project?** That project checks CRF/SDTM clinical data with edit checks. This one sits upstream in the lab: specimens, plates, curves, and assay QC. No SDTM domains, no CRF edit checks. The only shared idea is "inject known problems and measure detection".
 
@@ -232,9 +232,6 @@ Optional if time allows: an aliquot with 4 freeze-thaws (FREEZE_THAW_EXCEEDED), 
 |---|---|---|
 | Pfizer Pearl River, clinical immunology (GCLP assays, LIMS, automated analysis pipelines) | LIMS chain of custody, assay pipeline, GCLP/ALCOA+ controls | https://www.linkedin.com/jobs/view/4438829272 |
 | Pfizer vaccine R&D, AI-ready data pipelines from assay and notebook data | Structured, tidy assay data model, dbt marts, data lineage | https://www.linkedin.com/jobs/view/4454595614 |
-| Merck vaccine / lab data roles | Same skills | UNVERIFIED (no posting URL yet) |
-| Aquestive data roles | SQL/dbt, GxP data integrity | UNVERIFIED (no posting URL yet) |
-| Veeva (Vault LIMS / clinical data) | LIMS data model, audit trail, ALCOA+ | UNVERIFIED (no posting URL yet) |
 
 ---
 

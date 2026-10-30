@@ -27,7 +27,7 @@ Owner: Principal Engineer seat, 2026-10-30. Items link to the issue or risk they
 - A dashboard built from `docs/DASHBOARD_SPEC.md` on the exported marts.
 
 ## Won't do (explicit)
-- Use or imitate real trial, patient, Pfizer or DOWC data.
+- Use or imitate real trial or patient data.
 - Claim GxP validation or Part 11 compliance.
 - Add an LLM to the QC path. If an assistant is ever added, it runs on a local model and only explains flags; it
   never decides plate release.

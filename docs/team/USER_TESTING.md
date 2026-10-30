@@ -39,7 +39,7 @@ Takeaway: build for the reader with the least time or ability (the VP, the 68-ye
 
 Severity key: **B** = blocker, **M** = major, **m** = minor.
 
-### P1. Pfizer VP of Vaccine R&D, 30 seconds: "are we on track?"
+### P1. VP of Vaccine R&D, 30 seconds: "are we on track?"
 Worked
 - The H1 states a result, and the KPI tiles each start with a one-line verdict ("Every planted problem was caught").
 - Numbers come with their denominators ("56 of 58"). Honest truncation.

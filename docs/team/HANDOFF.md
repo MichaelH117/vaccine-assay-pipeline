@@ -15,7 +15,6 @@
   - The 2 LinkedIn posting URLs come from TEAM.md and were not re-opened (they may be closed).
   - The FDA data-integrity Q&A link was not opened: UNVERIFIED.
   - The exact ICH M10 calibration thresholds were not read from the PDF: UNVERIFIED. All thresholds live in config.
-  - Merck, Aquestive, and Veeva postings have no URLs: UNVERIFIED.
   - Decisions D1 to D5 need Michael. Defaults: DuckDB, ELISA IgG (GMT/GMC), 4-fold seroresponse, Power BI.
 - **Next:** tech-lead (DESIGN.md, TASKS.md).
 

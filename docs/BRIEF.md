@@ -24,7 +24,7 @@ LIMS screens by hand.
 
 ## Non-goals
 - Not a validated GxP system, not Part 11 compliant, no e-signatures or real authentication (SPEC section 6).
-- No real assay, trial, patient, Pfizer or DOWC data, and no claim about which LIMS or assays a real lab uses.
+- No real assay, trial or patient data, and no claim about which LIMS or assays a real lab uses.
 - No statistical analysis plan: GMT, GMFR and seroresponse follow common published definitions, not a protocol.
 - No LLM. Not a dashboard product: a dashboard spec and PNG charts only.
 

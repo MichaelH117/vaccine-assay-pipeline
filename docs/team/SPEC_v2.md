@@ -4,7 +4,7 @@ Owner: Product Owner seat. Status: DRAFT v2.0, waiting for Michael's calls in se
 Date: 2026-10-30. Builds on: SPEC.md v1 (signed off in SIGNOFF.md, commit c3a93fd). Hands off to: tech-lead.
 Main source: `C:\Users\stimp\projects\dev-team\research\vaccine-rnd-assay-workflow-2026-10-30.md` (written [R-n] below, where n is that file's reference number).
 
-All data is synthetic. No real instrument file, Pfizer SOP, patient or trial record is used. Public reference numbers (Prevnar 20, the Pfizer dLIA paper) are labelled **PUBLIC REFERENCE** with a URL, and are never mixed into synthetic results.
+All data is synthetic. No real instrument file, SOP, patient or trial record is used. Public reference numbers (Prevnar 20, the Pfizer dLIA paper) are labelled **PUBLIC REFERENCE** with a URL, and are never mixed into synthetic results.
 
 Do not touch `site/` in this round. The Design Lead owns it and is reworking it. v2 only produces the data the site will read (US-18).
 
@@ -258,7 +258,6 @@ Estimated build: about 2 days for the M stories plus US-16 or US-14. If day 1 ru
 | Pfizer, Scientist, Ligand Binding Assay Development | Curve fitting, accuracy/precision/linearity, LLOQ and range | https://www.pfizer.com/about/careers/job/4963445 (same caveat) |
 | Pfizer Pearl River clinical immunology (GCLP, LIMS, automated analysis pipelines) | Instrument-to-LIMS parsing, plate-map control | https://www.linkedin.com/jobs/view/4438829272 (from v1 SPEC; not reopened) |
 | Pfizer vaccine R&D, AI-ready data pipelines from assay data | Tidy per-analyte data model, file provenance | https://www.linkedin.com/jobs/view/4454595614 (from v1 SPEC; not reopened) |
-| Merck, Veeva, Aquestive data roles | Same | UNVERIFIED (no posting URL) |
 
 ---
 
