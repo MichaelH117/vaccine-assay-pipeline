@@ -11,7 +11,7 @@
       const dbtOk = d.failed === 0;
       // One compact line (fix 2 / 13): the SYNTHETIC caveat lives in the banner, so it is not repeated here.
       el.innerHTML =
-        `<span class="chip ${testsOk && dbtOk ? "ok" : "bad"}">${testsOk && dbtOk ? "&#10003; All automated checks passed" : "&#10007; Some automated checks failed"}</span>` +
+        `<span class="chip ${testsOk && dbtOk ? "ok" : "bad"}">${testsOk && dbtOk ? PHs("check") + "All automated checks passed" : PHs("x") + "Some automated checks failed"}</span>` +
         `<span class="chip">Data as of <b>${esc(m.run_at_utc.replace("T", " ").slice(0, 16))} UTC</b></span>` +
         `<details class="run-details"><summary>Run details</summary><span>pytest ${t.passed} of ${t.passed + t.failed + t.error} passed (${esc(t.date)}) · ` +
         `<a class="term" href="glossary.html#dbt" data-term="dbt">dbt</a>&nbsp;${d.passed} of ${d.nodes} passed · seed ${esc(m.seed)} · rules ${esc(m.rule_version)} · build ${esc(m.git_sha)}</span></details>`;
@@ -19,7 +19,7 @@
     });
   }).catch(() => {
     document.querySelectorAll(".status-badge").forEach((el) => {
-      el.innerHTML = `<span class="chip warn">&#9888; Run status could not be loaded</span>`;
+      el.innerHTML = `<span class="chip warn">${PHs("warning")}Run status could not be loaded</span>`;
     });
   });
 

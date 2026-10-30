@@ -56,23 +56,23 @@ player = {
   let i = window.__tubeStep[key] ?? +(new URLSearchParams(location.search).get("step") || 0), timer = null;
   const root = html`<div class="card-x"></div>`;
   const ctrl = html`<div class="controls" role="group" aria-label="Playback">
-    <button class="btn-x primary" data-a="play" aria-pressed="false">▶ Play</button>
-    <button class="btn-x" data-a="prev" aria-label="Previous step">◀ Back</button>
-    <button class="btn-x" data-a="next" aria-label="Next step">Next ▶</button>
-    <button class="btn-x" data-a="reset">↺ Start again</button></div>`;
+    <button class="btn-x primary" data-a="play" aria-pressed="false">${PH("play")}<span>Play</span></button>
+    <button class="btn-x" data-a="prev" aria-label="Previous step">${PH("caret-left")}<span>Back</span></button>
+    <button class="btn-x" data-a="next" aria-label="Next step"><span>Next</span>${PH("caret-right")}</button>
+    <button class="btn-x" data-a="reset">${PH("replay")}<span>Start again</span></button></div>`;
   const list = html`<ol class="stepper" aria-label="Custody steps"></ol>`;
   const detail = html`<div aria-live="polite"></div>`;
   root.append(ctrl, list, detail);
   const playBtn = ctrl.querySelector('[data-a="play"]');
 
-  function stop() { if (timer) clearInterval(timer); timer = null; playBtn.textContent = "▶ Play"; playBtn.setAttribute("aria-pressed", "false"); }
+  function stop() { if (timer) clearInterval(timer); timer = null; PHset(playBtn, "play", "Play"); playBtn.setAttribute("aria-pressed", "false"); }
   function go(n) { i = Math.max(0, Math.min(steps.length - 1, n)); window.__tubeStep[key] = i; draw(); }
   function draw() {
     list.innerHTML = "";
     steps.forEach((s, k) => {
       const done = k <= i;
       const cls = !done ? "future" : s.good ? "ok" : "bad";
-      const ic = !done ? "○" : s.good ? "✓" : "✗";
+      const ic = PH(!done ? "circle" : s.good ? "check" : "x");
       const word = !done ? "not reached yet" : s.good ? "seal matches" : (!s.seal ? "seal broken" : "record changed");
       const b = html`<button class="${cls} ${k === i ? "current" : ""}" aria-current="${k === i ? "step" : "false"}"
         aria-label="Step ${k + 1}, ${s.step}: ${word}"><span class="ic" aria-hidden="true">${ic}</span>
@@ -84,9 +84,9 @@ player = {
     const who = users.get(s.by) || s.by;
     const where = s.plate_id ? `${s.location}, ${s.plate_id} well ${s.well}` : s.location;
     let verdict;
-    if (!s.seal) verdict = html`<p class="bad-t">✗ Seal broken. Recomputing this row's seal gives a different value from the one stored when it was written. Someone changed the row after it was sealed.</p>`;
-    else if (!s.recordOk) verdict = html`<p class="bad-t">✗ The live record no longer matches its audit row: <b>performed by</b> now says ${users.get(s.live_performed_by)} (${s.live_performed_by}), but the sealed audit row says ${users.get(s.audit_performed_by)} (${s.audit_performed_by}). The seal itself still matches, because the audit row was not touched. Only the record check can see this.</p>`;
-    else verdict = html`<p class="ok-t">✓ Seal matches: recomputed seal = stored seal, and it links to the row before.</p>`;
+    if (!s.seal) verdict = html`<p class="bad-t">${PH("x")}Seal broken. Recomputing this row's seal gives a different value from the one stored when it was written. Someone changed the row after it was sealed.</p>`;
+    else if (!s.recordOk) verdict = html`<p class="bad-t">${PH("x")}The live record no longer matches its audit row: <b>performed by</b> now says ${users.get(s.live_performed_by)} (${s.live_performed_by}), but the sealed audit row says ${users.get(s.audit_performed_by)} (${s.audit_performed_by}). The seal itself still matches, because the audit row was not touched. Only the record check can see this.</p>`;
+    else verdict = html`<p class="ok-t">${PH("check")}Seal matches: recomputed seal = stored seal, and it links to the row before.</p>`;
     detail.innerHTML = "";
     detail.append(html`<h3 style="margin-top:.5rem">Step ${i + 1} of ${steps.length}: ${s.step}</h3>
       <p>${s.step[0].toUpperCase() + s.step.slice(1)} at <b>${where}</b> by <b>${who}</b> on <b>${when(s.at)}</b>.</p>
@@ -94,9 +94,9 @@ player = {
       ${verdict}
       <dl class="hash-grid">
         <dt>Audit row</dt><dd>#${s.audit_seq} (event ${s.event_id})</dd>
-        <dt>Previous row's seal</dt><dd class="hash" title="${s.prev_hash}">${short(s.prev_hash)} ${s.link_ok ? html`<span class="ok-t">✓ links</span>` : html`<span class="bad-t">✗ gap</span>`}</dd>
+        <dt>Previous row's seal</dt><dd class="hash" title="${s.prev_hash}">${short(s.prev_hash)} ${s.link_ok ? html`<span class="ok-t">${PH("check")}links</span>` : html`<span class="bad-t">${PH("x")}gap</span>`}</dd>
         <dt>Seal stored when written</dt><dd class="hash" title="${s.row_hash}">${short(s.row_hash)}</dd>
-        <dt>Seal recomputed now</dt><dd class="hash" title="${s.recomputed}">${short(s.recomputed)} ${s.seal ? html`<span class="ok-t">✓ same</span>` : html`<span class="bad-t">✗ different</span>`}</dd>
+        <dt>Seal recomputed now</dt><dd class="hash" title="${s.recomputed}">${short(s.recomputed)} ${s.seal ? html`<span class="ok-t">${PH("check")}same</span>` : html`<span class="bad-t">${PH("x")}different</span>`}</dd>
       </dl>`);
     if (i === steps.length - 1 && !tamper) detail.append(html`<p class="meaning"><strong>Next</strong>Now turn on the switch above to see what the pipeline found.</p>`);
     ctrl.querySelector('[data-a="prev"]').disabled = i === 0;
@@ -107,7 +107,7 @@ player = {
     if (a === "play") {
       if (timer) return stop();
       if (i === steps.length - 1) go(0);
-      playBtn.textContent = "❚❚ Pause"; playBtn.setAttribute("aria-pressed", "true");
+      PHset(playBtn, "pause", "Pause"); playBtn.setAttribute("aria-pressed", "true");
       timer = setInterval(() => { if (i >= steps.length - 1) return stop(); go(i + 1); }, reduceMotion ? 2600 : 1600);
     }
     if (a === "prev") { stop(); go(i - 1); }
@@ -144,7 +144,7 @@ broken_check      = ${cv.broken_check}</div>
 ```{ojs}
 tubeTable = html`<details class="table-twin"><summary>View all steps as a table (no animation)</summary>
 <div class="table-scroll"><table class="table-x"><thead><tr><th>#</th><th>Step</th><th>When</th><th>Who</th><th>Where</th><th>Audit row</th><th>Stored seal</th><th>Recomputed seal</th><th>Result</th></tr></thead>
-<tbody>${steps.map((s, k) => html`<tr><td>${k + 1}</td><td>${s.step}</td><td>${when(s.at)}</td><td>${s.by}${tube.inj_type === "INJ-11" && tamper && !s.recordOk ? ` (live record: ${s.live_performed_by})` : ""}</td><td>${s.location}</td><td>${s.audit_seq}</td><td class="hash">${short(s.row_hash)}</td><td class="hash">${short(s.recomputed)}</td><td>${s.good ? "✓ matches" : (!s.seal ? "✗ seal broken" : "✗ record changed")}</td></tr>`)}</tbody></table></div>
+<tbody>${steps.map((s, k) => html`<tr><td>${k + 1}</td><td>${s.step}</td><td>${when(s.at)}</td><td>${s.by}${tube.inj_type === "INJ-11" && tamper && !s.recordOk ? ` (live record: ${s.live_performed_by})` : ""}</td><td>${s.location}</td><td>${s.audit_seq}</td><td class="hash">${short(s.row_hash)}</td><td class="hash">${short(s.recomputed)}</td><td>${PH(s.good ? "check" : "x")}${s.good ? "matches" : (!s.seal ? "seal broken" : "record changed")}</td></tr>`)}</tbody></table></div>
 <p class="muted">Hashes are SHA-256 over the row's columns plus the previous row's hash (<code>pipeline/audit.py compute_row_hash</code>). Hover a shortened hash above to see all 64 characters. Source: <code>audit.audit_log</code>, <code>lims.custody_events</code>; prepared by <code>site/build_data.py</code>, which stops the build if the reconstructed pre-tamper row does not reproduce the stored seal.</p></details>`
 ```
 

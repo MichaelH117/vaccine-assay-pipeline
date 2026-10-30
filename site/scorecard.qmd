@@ -54,7 +54,7 @@ viewof cat = Inputs.radio(["All", "Lab bench", "Tube identity and custody", "Tam
 cards = {
   const list = problems.filter((p) => cat === "All" || p.category === cat);
   return html`<div class="score-grid" role="list">${list.map((p) => html`<article class="score-card ${p.detected ? "" : "miss"}" role="listitem">
-    <h3>${p.detected ? html`<span class="ok-t">✓ Caught</span>` : html`<span class="bad-t">✗ Missed</span>`} · ${p.problem_id}</h3>
+    <h3>${p.detected ? html`<span class="ok-t">${PH("check")}Caught</span>` : html`<span class="bad-t">${PH("x")}Missed</span>`} · ${p.problem_id}</h3>
     <p class="story">${story(p)}</p>
     <p class="meta">Added as ${p.inj_type} on ${p.problems.map((x) => x.affected_key).join(", ")} · expected flag <code>${p.expected}</code> · raised <code>${p.caught_by || "none"}</code> · ${p.category}</p>
   </article>`)}</div>`;
@@ -64,7 +64,7 @@ cards = {
 ```{ojs}
 scTable = html`<details class="table-twin"><summary>View the scorecard as a table (${SC.rows.length} affected records)</summary>
 <div class="table-scroll"><table class="table-x"><thead><tr><th>Problem</th><th>Type</th><th>Record</th><th>What was added (generator's words)</th><th>Expected flag</th><th>Caught by</th><th>Detected</th></tr></thead>
-<tbody>${SC.rows.map((r) => html`<tr><td>${r.problem_id}</td><td>${r.inj_type}</td><td>${r.affected_key}</td><td>${r.description}</td><td><code>${r.expected_flags}</code></td><td><code>${r.caught_by ?? "—"}</code></td><td>${r.problem_detected ? "✓ yes" : "✗ no"}</td></tr>`)}</tbody></table></div>
+<tbody>${SC.rows.map((r) => html`<tr><td>${r.problem_id}</td><td>${r.inj_type}</td><td>${r.affected_key}</td><td>${r.description}</td><td><code>${r.expected_flags}</code></td><td><code>${r.caught_by ?? "—"}</code></td><td>${r.problem_detected ? html`<span class="ok-t">${PH("check")}yes</span>` : html`<span class="bad-t">${PH("x")}no</span>`}</td></tr>`)}</tbody></table></div>
 <p class="muted">Source: <code>marts.detection_scorecard</code>, <code>marts.scorecard_summary</code>. Expected flags per problem type come from <code>config/qc_rules.yaml</code>. A problem only counts as caught if the expected flag fired and no "masking" flag explains it instead (for example, a control failure on a plate whose curve also failed is not credited).</p></details>`
 ```
 
@@ -86,8 +86,8 @@ fpBox = {
 ```{ojs}
 finale = {
   const s = SC.summary;
-  return html`<div class="card-x" style="text-align:center;border-top:4px solid var(--ok)">
-  <div class="big-result">✓ ${s.required_problems_detected} of ${s.required_problems_planted}</div>
+  return html`<div class="card-x finale-card">
+  <div class="big-result">${PH("check")}${s.required_problems_detected} of ${s.required_problems_planted}</div>
   <p style="margin:.4rem auto 0;max-width:60ch"><b>Every test problem was caught</b>, ${s.keys_detected} of ${s.keys_planted} affected records, across ${s.required_inj_types_planted} problem types, with ${SC.false_positives.plates_rejected_unexplained} false plate rejections.</p></div>`;
 }
 ```

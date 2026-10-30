@@ -193,3 +193,119 @@ for every page.
 - No real screen-reader (NVDA/VoiceOver) test and no real phone; the 375 px runs are Chrome device emulation.
 - The Prevnar 20 dates are as summarized by our research note from the FDA memo; I did not re-open the PDF.
 - Takeaway titles were not restated by a separate reader (playbook rule 12): next step for ux-researcher.
+
+
+---
+
+# SPECIMEN identity + "living specimen" wallpaper, 2026-10-30 (late)
+
+Inputs: `dev-team/research/original-visual-identity-2026-10-30.md` (section 1 AI-look tells, 3.1 SPECIMEN, 6 animated
+backgrounds) and three notes from Michael relayed by the EM: a whole-site moving wallpaper inspired by sci-fi
+loading screens (bold geometric and organic forms, registration marks, type fragments, data callouts; no Bungie
+assets or names), content floating on paper panels above it, and "lava-lamp" motion ("ASMR for the eyes").
+Not committed. No images, video or packages downloaded.
+
+## Before / after
+
+Before screenshots: `docs/img/site/before/` (overview-1440, overview-375, qc-1440, scorecard-1440,
+story-chain-1440, story-reader-1440). After: `docs/img/site/*.png` (26 files, the same names plus overview-1280x720,
+overview-640, overview-dark-1440, qc-dark-1440, overview-reduced-motion, qc-forced-colors, story-caught-1440).
+
+| Area | Before (AI-look tell) | After (SPECIMEN) |
+|---|---|---|
+| Type | IBM Plex Sans only (Cosmo also loaded its own web font) | Fraunces headlines; IBM Plex Sans text; IBM Plex Mono for numbers, well IDs and record IDs. One Google Fonts `<link>`; Cosmo's web font switched off |
+| Palette | Blue/navy SaaS palette, purple control colour `#6250d6` | Paper `#F5F2EB`, ink `#15212B`, fixative teal `#0F5E6B`, iodine rust `#A4471A`, slate `#5B6670`, fluor amber `#E3B23C` (fills only on paper). Dark "microscope" mode `#0E1A22`. Controls slate blue, no purple |
+| Hero | Navy-to-teal gradient card, soft shadow, pill "On track" badge, white text | Left-aligned verdict on a paper panel under a 2 px ink rule; a ruled "On track" stamp in Plex Mono; three ruled number columns; a framed "Field 01" window onto the wallpaper, which is the slot for a NIAID micrograph |
+| Cards | 13 identical rounded icon cards with tick circles; 12 px radius everywhere | Problems caught and the scorecard are a lab ledger (hairline rows, IDs in mono); 2 px corners; no shadows |
+| Glow / glass | Gaussian glow on bright wells; pulsing box-shadow on the broken padlock | Flat fluor-amber wells; the padlock simply opens; no blur, no glass |
+| Icons | Unicode/emoji marks (check, cross, play, pause, replay, warning, triangle, dot) | 13 inline SVG icons with Phosphor regular geometry (MIT), one sprite in `_banner.html`, always next to a word, `aria-hidden` |
+| Signature | none | The 96-well motif: 12-well row dividers on every chapter and section; a 96-well (48 on phones) progress strip that fills as you scroll; well labels A01–H08 on the story chapters (a diagonal "dilution series"); bracket marginalia for sources; crop marks on each sheet |
+| Background | Flat page | "Living specimen" wallpaper behind everything, on every page (below) |
+
+## The living-specimen wallpaper
+
+- **What it is.** A fixed, full-viewport layer behind the header, margins and content on every page
+  (`assets/specimen.js`, 14 KB unminified, no libraries). Content floats above it on solid paper panels
+  (`--panel`). The wallpaper shows in the gutters and in the gaps between sections.
+- **Layer 1, droplets.** Nine soft cell-like droplets in a metaball field. They merge and part, with a faint membrane
+  band where they meet.
+  - The field is computed at about 1/10 resolution, then upscaled and blurred by 14 px, so edges are soft and
+    nothing jitters.
+  - Each centre follows two sine curves with 40–90 s periods; radii breathe over 20–40 s.
+  - The whole field's strength swells ±15% over 30 s.
+- **Layer 2, lines.** Faint 96-well plates, registration marks and lab-label callouts that use real values from the
+  site (B07, OD 3.212, PLATE-004, row 2,130, SMP-00180, seed 42). Also two oversized outline type fragments
+  ("96", "A01") and audit-chain links. Plus static scan lines and one barely visible scan band every 40 s.
+- **Chapter moods (overview).**
+  - Calm: verdict and chapters 1, 2 and 6.
+  - Plate: chapter 3, with the plates stronger and an amber droplet.
+  - Ledger: chapter 4, with the callouts stronger.
+  - Chain: chapter 5, with chain links and a rust droplet.
+  - Moods cross-fade over a few seconds. With motion off they switch as a still.
+- **Palette and contrast.** Teal, ink and paper only, with one amber and one rust droplet. The tint is at most 10%
+  (light) or 12% (dark) of the way from the base colour to teal, about 1.2:1 against the page. It is decoration,
+  never information.
+- **Never behind data.** Every text, chart and table pixel sits on a solid paper panel or a solid dark stage panel.
+  The hero window holds no data.
+- **Motion rules.**
+  - No flashing (WCAG 2.3.1): no brightness change happens in less than several seconds.
+  - Pause/Play on every page (WCAG 2.2.2): a fixed button at the bottom left. At 1500 px and wider it reads
+    "Pause motion"; below that it is a 44 px icon whose name stays available to screen readers. The setting is
+    remembered and shared with the story's own controls.
+  - `prefers-reduced-motion`: one still frame (t = 23 s).
+  - Stops in a background tab; capped at 30 fps; lines drawn at device pixel ratio 1.
+- **Forced colors and print:** the wallpaper, grain and button are hidden, and panels drop their backgrounds.
+
+## Contrast (WCAG 2.x, computed)
+
+| Pair | Light | Dark |
+|---|---|---|
+| Ink on paper / panel | 14.62 / 15.54 | 15.79 / 14.53 |
+| Muted (slate) on paper / panel / shaded paper | 5.25 / 5.58 / 4.76 | 7.74 / 7.12 / 6.30 |
+| Teal (links, ok) on paper / panel / well tint | 6.63 / 7.04 / 5.82 | 9.20 / 8.46 / 7.27 |
+| Rust (bad) on paper / panel / bad tint | 5.37 / 5.71 / 4.74 | 7.14 / 6.57 / 6.18 |
+| Warn text on paper / warn tint | 6.13 / 5.53 | 8.99 / 7.30 |
+| Banner: amber / paper text on ink `#15212B` | 8.33 / 14.62 | same |
+| Series marks: vaccine / placebo on panel (3:1 needed) | 4.34 / 4.55 | 4.83 / 5.24 |
+| Stage-panel marks `#2399AE` / `#C4861A` | 5.25 / 5.69 on `#0E1A22` | 5.57 / 6.05 on `#09131A` |
+
+**Series pairs, checked with dataviz `validate_palette.js`:**
+- Light, `#0080A0`/`#A3640A` on paper: all checks pass, with CVD ΔE of 14 or more.
+- Dark, `#2399AE`/`#C4861A` on `#0E1A22`: all checks pass.
+- The research teal `#0F5E6B` failed the chroma floor as a series colour, so it is used for text and links only.
+
+## Checks (headless Chrome via CDP, one Chrome at a time)
+
+- **Render.** `quarto render site --output-dir _build`: 7 of 7 pages, 0 warnings. The output was copied into
+  `site/_site` and `_build` deleted, because the :8600 server holds `_site`.
+- **Runs.** 48 in total:
+  - 7 pages x 6 conditions: 1440x900, 1280x720, 640x900, 375x800, forced-colors and reduced-motion;
+  - dark mode on the overview and QC pages;
+  - 4 story-chapter scroll runs.
+- **Results:**
+  - OJS errors: 0
+  - Page wider than the viewport: 0
+  - Copy buttons: 0
+  - Skip link: 48 of 48
+  - Visible SVG text under 14 px: 0
+  - Unnamed inputs: 0
+  - Tables without a caption: 0
+  - `aria-live` status badges: 0
+- **Above the fold at 1280x720.** The verdict, all three numbers and their source links are visible. The hero
+  block now ends at 737 px (555 px before); the "Skip the story" link is at about 676 px.
+- **375 px.** A full-page capture timed out in headless Chrome. That is a capture limit, not a page error, so the
+  375 runs use the 800 px viewport. Page width was 375 on every 375 run.
+
+## Known gaps (honest)
+
+- **Icons.** They are redrawn from Phosphor's regular-weight geometry (256 grid, 16-unit strokes), not copied from
+  the package. Diff them against the official SVGs before shipping. The MIT notice is in `_banner.html` and on the
+  How it works page.
+- **Empty slots.** The hero window and any `hero-loop` video are empty. The credits table at `about.qmd#credits`
+  lists each slot. Downloading a NIAID image needs Michael's approval.
+- **Performance.** The metaball pass does about 13,000 pixels x 9 droplets per frame at 30 fps on a 1440 px
+  screen. It runs fine in headless Chrome but has not been profiled on the low-RAM laptop.
+- **Untested with people.** No real screen-reader or real-phone test yet, and the takeaway titles have still not
+  been restated by a reader.
+- **No scroll parallax.** The research lists it as gimmicky for boards, so "depth" comes from opacity and scale
+  only.

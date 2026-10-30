@@ -1,37 +1,51 @@
 /*-- scss:defaults --*/
-$body-bg: #0f1720;
-$body-color: #e6edf3;
-$link-color: #7cb8ff;
-$primary: #7cb8ff;
-$navbar-bg: #131d27;
-$navbar-fg: #e6edf3;
-$navbar-hl: #7cb8ff;
-$footer-bg: #131d27;
+// SPECIMEN dark: "microscope". Selected, not inverted.
+$body-bg: #0E1A22;
+$body-color: #F5F2EB;
+$link-color: #7FC8C2;
+$primary: #7FC8C2;
+$navbar-bg: #0E1A22;
+$navbar-fg: #F5F2EB;
+$navbar-hl: #7FC8C2;
+$footer-bg: #0E1A22;
 
 /*-- scss:rules --*/
 :root {
   color-scheme: dark;
-  --bg: #0f1720;
-  --surface: #16212c;
-  --surface-2: #1d2a37;
-  --ink: #e6edf3;
-  --ink-2: #c3cfdb;
-  --muted: #9fb0c1;
-  --line: #2e3d4d;
-  --accent: #7cb8ff;
-  --focus: #9ccaff;
-  --vac: #3987e5;
-  --pla: #d95926;
-  --neutral-mark: #8b98a6;
-  --ctrl: #9085e9;
-  --ok: #4fd1ac;     --ok-bg: #0f2d27;
-  --bad: #ff9466;    --bad-bg: #3a1d12;
-  --warn: #e3b341;   --warn-bg: #342a10;
-  --stage-bg: #0a121b;
-  --stage-ink: #e8f0f7;
-  --stage-muted: #a9bccd;
-  --stage-line: #2b3d50;
-  --hero-bg: linear-gradient(135deg, #0b1b2a 0%, #0d2738 60%, #0a2f3b 100%);
+  --bg: #0E1A22;
+  --surface: #13222C;
+  --surface-2: #1A2C38;
+  --ink: #F5F2EB;         /* 15.8:1 */
+  --ink-2: #D3D0C8;
+  --muted: #A3ADB5;       /* 7.7:1 */
+  --line: #2C3E4A;
+  --rule: #F5F2EB;
+  --accent: #7FC8C2;      /* teal-light, 9.2:1 */
+  --focus: #7FC8C2;
+  --rust: #F08A5D;
+  --amber: #E3B23C;       /* 9.0:1: text allowed in dark mode */
+  --well: #1A2C38;
+  --well-ring: #4E6472;
+  --vac: #2399AE;         /* validated dark pair */
+  --pla: #C4861A;
+  --neutral-mark: #8B98A6;
+  --ctrl: #9DB4D6;
+  --ok: #7FC8C2;     --ok-bg: #12312F;
+  --bad: #F08A5D;    --bad-bg: #3A1E12;
+  --warn: #E3B23C;   --warn-bg: #33290F;
+  --stage-bg: #09131A;
+  --stage-ink: #F5F2EB;
+  --stage-muted: #A3ADB5;
+  --stage-line: #2C3E4A;
+  --stage-vac: #2399AE;
+  --stage-pla: #C4861A;
+  --hero-bg: var(--bg);
   --chart-font: .85rem;
-  --band: rgba(57,135,229,.18);
+  --band: rgba(35,153,174,.18);
+  --panel: #13222C;
+  --ls-teal: #7FC8C2;
+  --ls-rust: #F08A5D;
+  --ls-line: #7FC8C2;
+  --ls-strength: .12;
+  --grain-opacity: .05;
 }

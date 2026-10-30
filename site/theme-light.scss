@@ -1,37 +1,52 @@
 /*-- scss:defaults --*/
-$body-bg: #f6f8fa;
-$body-color: #10233a;
-$link-color: #0b5cad;
-$primary: #0b5cad;
-$navbar-bg: #ffffff;
-$navbar-fg: #10233a;
-$navbar-hl: #0b5cad;
-$footer-bg: #ffffff;
+// SPECIMEN light: "lab-notebook paper". Contrast ratios (WCAG 2.x) are in docs/team/DESIGN_REVIEW.md.
+$body-bg: #F5F2EB;
+$body-color: #15212B;
+$link-color: #0F5E6B;
+$primary: #0F5E6B;
+$navbar-bg: #F5F2EB;
+$navbar-fg: #15212B;
+$navbar-hl: #0F5E6B;
+$footer-bg: #F5F2EB;
 
 /*-- scss:rules --*/
 :root {
   color-scheme: light;
-  --bg: #f6f8fa;
-  --surface: #ffffff;
-  --surface-2: #eef2f6;
-  --ink: #10233a;
-  --ink-2: #3b4b5f;
-  --muted: #56657a;
-  --line: #d3dbe4;
-  --accent: #0b5cad;
-  --focus: #0b5cad;
-  --vac: #2a78d6;
-  --pla: #eb6834;
-  --neutral-mark: #6b7785;
-  --ctrl: #6250d6;
-  --ok: #006b54;     --ok-bg: #e3f4ef;
-  --bad: #b03a0a;    --bad-bg: #fdebe3;
-  --warn: #8a5a00;   --warn-bg: #fff4d6;
-  --stage-bg: #0e1a26;
-  --stage-ink: #e8f0f7;
-  --stage-muted: #a9bccd;
-  --stage-line: #2b3d50;
-  --hero-bg: linear-gradient(135deg, #0c2236 0%, #0e3048 60%, #0b3a4a 100%);
+  --bg: #F5F2EB;          /* paper */
+  --surface: #FBF9F4;     /* paper, lifted */
+  --surface-2: #ECE7DC;   /* paper, shaded */
+  --ink: #15212B;         /* 14.6:1 on paper */
+  --ink-2: #2E3B46;       /* 10.3:1 */
+  --muted: #5B6670;       /* slate, 5.3:1 (4.8:1 on shaded paper) */
+  --line: #CFC8BA;
+  --rule: #15212B;
+  --accent: #0F5E6B;      /* fixative teal, 6.6:1 */
+  --focus: #0F5E6B;
+  --rust: #A4471A;        /* iodine rust, 5.4:1 */
+  --amber: #E3B23C;       /* fluor amber: fills and marks only, never text on paper */
+  --well: #DCE6E4;        /* well tint (non-text) */
+  --well-ring: #8FA3A0;
+  --vac: #0080A0;         /* series: validated with dataviz validate_palette (light, all checks pass) */
+  --pla: #A3640A;
+  --neutral-mark: #6E7880;
+  --ctrl: #3D5A80;        /* controls: slate blue (no purple) */
+  --ok: #0F5E6B;     --ok-bg: #DCE6E4;
+  --bad: #A4471A;    --bad-bg: #F3E1D6;
+  --warn: #7A5300;   --warn-bg: #F4E6C2;
+  /* "microscope" stage panels stay dark in both modes */
+  --stage-bg: #0E1A22;
+  --stage-ink: #F5F2EB;
+  --stage-muted: #A3ADB5;
+  --stage-line: #2C3E4A;
+  --stage-vac: #2399AE;   /* validated dark pair */
+  --stage-pla: #C4861A;
+  --hero-bg: var(--bg);
   --chart-font: .85rem;
-  --band: rgba(42,120,214,.12);
+  --band: rgba(0,128,160,.12);
+  --panel: #FBF9F4;
+  --ls-teal: #0F5E6B;
+  --ls-rust: #A4471A;
+  --ls-line: #0F5E6B;
+  --ls-strength: .10;
+  --grain-opacity: .035;
 }

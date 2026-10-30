@@ -42,7 +42,7 @@ viewof plate = {
     const rej = p.status === "REJECTED";
     const reasons = p.reject_reasons ? p.reject_reasons.split(",").join(", ") : "";
     const b = html`<button class="${rej ? "rej" : "acc"} ${hit && !hit.has(p.plate_id) ? "dim" : ""}" aria-pressed="${p.plate_id === wrap.value}">
-      <span class="pid">${p.plate_id}</span><span class="${rej ? "bad-t" : "ok-t"}">${rej ? "✗ Rejected" : "✓ Accepted"}</span>
+      <span class="pid">${p.plate_id}</span><span class="${rej ? "bad-t" : "ok-t"}">${PH(rej ? "x" : "check")}${rej ? "Rejected" : "Accepted"}</span>
       ${reasons ? html`<br><span class="muted" style="font-size:.8rem">${reasons}</span>` : ""}
       ${p.repeat_of_plate_id ? html`<br><span class="muted" style="font-size:.8rem">repeat of ${p.repeat_of_plate_id}</span>` : ""}</button>`;
     b.onclick = () => {
@@ -109,7 +109,7 @@ wellChart = {
         stroke: (d) => flagged.has(d.well) ? "var(--bad)" : "var(--neutral-mark)",
         strokeWidth: (d) => flagged.has(d.well) ? 3 : 1,
         strokeDasharray: (d) => flagged.has(d.well) ? "4,2" : null,
-        title: (d) => `${plate} well ${d.well}\n${d.well_type}${d.level != null ? " level " + d.level : ""}${d.sample_id ? "\n" + d.sample_id : ""}\nOD ${d.od}` + (flagged.has(d.well) ? `\n✗ ${flagged.get(d.well).rule_id}: ${flagged.get(d.well).message}` : "")}),
+        title: (d) => `${plate} well ${d.well}\n${d.well_type}${d.level != null ? " level " + d.level : ""}${d.sample_id ? "\n" + d.sample_id : ""}\nOD ${d.od}` + (flagged.has(d.well) ? `\nFlag ${flagged.get(d.well).rule_id}: ${flagged.get(d.well).message}` : "")}),
       Plot.text(W, {x: "col_num", y: "row_letter", text: (d) => flagged.has(d.well) ? "!" : letter[d.well_type], fill: (d) => flagged.has(d.well) && d.well_type === "SAMPLE" ? "var(--bad)" : (d.well_type === "SAMPLE" ? "var(--ink)" : "#fff"), fontWeight: 700, fontSize: "var(--chart-font)"})
     ]
   });
@@ -148,7 +148,7 @@ curveChart = {
       Plot.dot(inR, {x: "x", y: "mean_od", r: 3, fill: "var(--neutral-mark)", fillOpacity: 0.6, title: (d) => `${d.sample_id}\nOD ${d.mean_od}\n${d.conc_au_ml.toFixed(1)} AU/mL after 1:${d.dilution} dilution`}),
       Plot.dot(low.concat(high), {x: "x", y: "mean_od", r: 6, symbol: "triangle", stroke: "var(--bad)", strokeWidth: 2, fill: "none", title: (d) => `${d.sample_id}\nOD ${d.mean_od}\n${d.range_flag}: outside the valid range, not read off the curve`}),
       Plot.dot(S, {x: "nominal_conc", y: "mean_od", r: 6, fill: (d) => d.within_limits ? "var(--vac)" : "none", stroke: (d) => d.within_limits ? "var(--bs-body-bg)" : "var(--bad)", strokeWidth: 2, symbol: (d) => d.within_limits ? "circle" : "times",
-        title: (d) => `Standard level ${d.level}\nKnown amount ${d.nominal_conc} AU/mL\nOD ${d.mean_od}\nRead back ${d.recovery_pct == null ? "—" : d.recovery_pct.toFixed(1) + "%"} ${d.within_limits ? "✓ within 80–120%" : "✗ outside 80–120%"}`}),
+        title: (d) => `Standard level ${d.level}\nKnown amount ${d.nominal_conc} AU/mL\nOD ${d.mean_od}\nRead back ${d.recovery_pct == null ? "—" : d.recovery_pct.toFixed(1) + "%"} ${d.within_limits ? "(within 80–120%)" : "(outside 80–120%)"}`}),
       Plot.ruleY([0])
     ]
   });
@@ -183,7 +183,7 @@ flagTable = {
   const rows = P.flags.filter((f) => (rule === "ALL" ? f.plate_id === plate : f.rule_id === rule));
   return html`<details class="table-twin" open><summary>${rule === "ALL" ? `QC flags on ${plate} (${rows.length})` : `Every ${rule} flag, all plates (${rows.length})`} · view as table</summary>
   <div class="table-scroll"><table class="table-x"><thead><tr><th>Plate</th><th>Sample</th><th>Rule</th><th>In plain words</th><th>Blocks the result?</th><th>Pipeline message</th></tr></thead>
-  <tbody>${rows.length ? rows.map((f) => html`<tr><td>${f.plate_id}</td><td>${f.sample_id ?? "whole plate"}</td><td><code>${f.rule_id}</code></td><td>${RULES.get(f.rule_id)}</td><td>${f.blocking ? html`<span class="bad-t">✗ yes</span>` : html`<span class="warn-t">no, reported as &lt;LLOQ</span>`}</td><td>${f.message}</td></tr>`) : html`<tr><td colspan="6">No flags.</td></tr>`}</tbody></table></div>
+  <tbody>${rows.length ? rows.map((f) => html`<tr><td>${f.plate_id}</td><td>${f.sample_id ?? "whole plate"}</td><td><code>${f.rule_id}</code></td><td>${RULES.get(f.rule_id)}</td><td>${f.blocking ? html`<span class="bad-t">${PH("x")}yes</span>` : html`<span class="warn-t">no, reported as &lt;LLOQ</span>`}</td><td>${f.message}</td></tr>`) : html`<tr><td colspan="6">No flags.</td></tr>`}</tbody></table></div>
   <p class="muted">Source: <code>assay.qc_flags</code> (rule version QC-RULES-1.0), <code>marts.mart_plate_qc</code>, <code>assay.curve_fits</code>, <code>assay.std_recovery</code>, <code>assay.well_reads</code>. Thresholds from <code>config/qc_rules.yaml</code>; they are demo defaults, not checked against any real assay validation.</p></details>`;
 }
 ```
@@ -191,7 +191,7 @@ flagTable = {
 ```{ojs}
 plateTable = html`<details class="table-twin"><summary>All 13 plates as a table</summary>
 <div class="table-scroll"><table class="table-x"><thead><tr><th>Plate</th><th>Status</th><th>Reasons</th><th class="num">R²</th><th class="num">Standards OK</th><th class="num">High control (target 300)</th><th class="num">Low control (target 10)</th></tr></thead>
-<tbody>${P.plates.map((p) => html`<tr><td>${p.plate_id}</td><td>${p.status === "REJECTED" ? html`<span class="bad-t">✗ rejected</span>` : html`<span class="ok-t">✓ accepted</span>`}</td><td>${p.reject_reasons || "—"}</td><td class="num">${p.r_squared.toFixed(4)}</td><td class="num">${p.std_pass_pct.toFixed(0)}%</td><td class="num">${p.ctrl_high_conc == null ? "—" : p.ctrl_high_conc.toFixed(1)}</td><td class="num">${p.ctrl_low_conc == null ? "—" : p.ctrl_low_conc.toFixed(2)}</td></tr>`)}</tbody></table></div></details>`
+<tbody>${P.plates.map((p) => html`<tr><td>${p.plate_id}</td><td>${p.status === "REJECTED" ? html`<span class="bad-t">${PH("x")}rejected</span>` : html`<span class="ok-t">${PH("check")}accepted</span>`}</td><td>${p.reject_reasons || "—"}</td><td class="num">${p.r_squared.toFixed(4)}</td><td class="num">${p.std_pass_pct.toFixed(0)}%</td><td class="num">${p.ctrl_high_conc == null ? "—" : p.ctrl_high_conc.toFixed(1)}</td><td class="num">${p.ctrl_low_conc == null ? "—" : p.ctrl_low_conc.toFixed(2)}</td></tr>`)}</tbody></table></div></details>`
 ```
 
 ::: {.honest}

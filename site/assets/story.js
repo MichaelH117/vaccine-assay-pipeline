@@ -26,9 +26,9 @@
   }
   function syncButtons() {
     document.querySelectorAll("[data-motion-toggle]").forEach((b) => {
-      if (rm.matches) { b.disabled = true; b.textContent = "Motion off (system setting)"; b.setAttribute("aria-pressed", "true"); return; }
+      if (rm.matches) { b.disabled = true; PHset(b, "minus", "Motion off (system setting)"); b.setAttribute("aria-pressed", "true"); return; }
       b.setAttribute("aria-pressed", String(paused));
-      b.textContent = paused ? "▶ Turn motion on" : "❚❚ Pause motion";
+      PHset(b, paused ? "play" : "pause", paused ? "Turn motion on" : "Pause motion");
     });
   }
 

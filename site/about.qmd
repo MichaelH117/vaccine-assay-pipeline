@@ -50,11 +50,37 @@ loads about 0.35 MB of data, with no database.
 - **Every number** is read at build time from `docs/results.json`, `data/marts/*.csv` and the read-only DuckDB
   warehouse by `site/build_data.py`. The script re-checks that per-volunteer results add up to the published mart and
   that the rebuilt pre-tamper audit row reproduces its stored seal; if not, the build stops.
-- **Accessibility.** Every chart has a "view as table" twin. Color is never the only signal (✓/✗ icons, filled vs
+- **Accessibility.** Every chart has a "view as table" twin. Color is never the only signal (check and cross icons with words, filled vs
   hollow, letters on wells). Text meets WCAG AA contrast in light and dark mode. Animation respects
   "reduce motion", the play button has pause, and everything works with the keyboard.
 - **Rebuild:** `.venv\Scripts\python -m pipeline.run`, then `.venv\Scripts\python site\build_data.py`, then
   `quarto render site`.
+
+## Image, type and icon credits {#credits}
+
+The site has its own look, called SPECIMEN: lab-notebook paper, a fixative-teal ink, and the 96-well plate as its
+mark. Every picture slot is listed here. **No image or video has been downloaded yet.** Each slot is empty and shows
+a placeholder drawn by code until Michael approves a specific public-domain file.
+
+::: {.table-scroll}
+| Slot | Where | Status now | Planned source | Credit line to use |
+|---|---|---|---|---|
+| `hero-micrograph` | Overview, next to the verdict | Empty. Shows a slow, code-drawn field of cells, labelled on screen as not a real micrograph | NIAID image library (Flickr), public-domain items only; check each image, as some older uploads are CC BY 2.0 | "Image: NIAID" plus the image title and link |
+| `hero-loop` (optional) | Same figure, as a 6–12 s muted loop | Empty. Would be made from the approved still with a slow pan, no audio, under 1.5 MB | Same still as above | Same as above |
+
+: Picture slots and their sources {.credits-table}
+:::
+
+- **Type:** [Fraunces](https://fonts.google.com/specimen/Fraunces) (headlines), [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans)
+  (text) and [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) (numbers and well IDs), served by Google
+  Fonts under the SIL Open Font License 1.1.
+- **Icons:** drawn inline in the page from the geometry of [Phosphor Icons](https://github.com/phosphor-icons/homepage)
+  (regular weight), MIT License, © Phosphor Icons. Every icon sits next to a word; none carries meaning alone.
+- **Texture:** the paper grain and the specimen field are generated in the browser (SVG noise and a small canvas
+  drawing). No image files.
+- **Motion:** the specimen field drifts a few pixels a second, stops when it is off-screen, has a **Pause motion**
+  button, and is a still picture under your system's "reduce motion" setting. Nothing moves behind a chart, table or
+  number.
 
 ## Honesty notes
 
