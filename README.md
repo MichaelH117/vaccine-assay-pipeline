@@ -121,6 +121,9 @@ The first complete build passed its own tests. Code review and QA then attacked 
 About 5 minutes on a laptop: about 4 min to install (measured 4.3 min on a fresh venv), under a minute to build, and about 6 min more if you add the tests.
 Needs **Python 3.13** and nothing else: no database server, no API keys, no network calls at runtime.
 
+The repository is not on GitHub yet, so the `git clone` lines below work only after it is pushed. Until then, start
+from a local copy of the folder.
+
 **Windows (PowerShell)**
 
 ```powershell

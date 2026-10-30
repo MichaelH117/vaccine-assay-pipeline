@@ -429,3 +429,10 @@ Still open: refresh TEST_PLAN.md counts (QA); hand-check the other 8 KPI formula
 - Checks: new test file FAILED against the old run.py (3 of 4 tests, e.g. "a suite that never ran was recorded as ok: {... 'error': 1 ...}"), 4 passed with the fix. Quick subset `pytest -x -q` on test_run_pytest, test_curve, test_stats, test_generator, test_ingest: 61 passed. Full pipeline and full suite NOT run (RAM brief).
 - Open: README/results.json pytest row is unchanged until the next `pipeline.run --test`.
 - Next: QA Engineer.
+
+## 2026-10-30 principal-engineer (overnight step 7: cross-project consistency review)
+- Did: marked KI-06, KI-13, KI-14 resolved (BUG-011, BUG-009, BUG-010 were fixed); added KI-16 (purple inline code in site dark mode); noted that the Quickstart git clone URL works only after the repo is pushed.
+- Files: docs/KNOWN_ISSUES.md, README.md
+- Checks: README headline numbers compared with docs/results.json by hand; no code or numbers changed.
+- Open: KI-16 for design-lead.
+- Full review: dev-team/brand/portfolio/CONSISTENCY_REVIEW.md. Next: design-lead (KI-16).
