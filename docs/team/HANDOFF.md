@@ -270,3 +270,28 @@
 - **Not checked:** CI has never run on GitHub (not pushed); Linux run not executed locally (code review only: dbt path uses `os.name`, chmod read-only tests assume non-root, which holds on GitHub runners). Full pytest not re-run by me (EM's run: 245 passed).
 - **Files changed:** requirements.txt, README.md, Makefile, .gitignore, .github/workflows/ci.yml, pipeline/run.py (one format line), docs/{BRIEF,CASE_STUDY,EXECUTIVE_ONE_PAGER,FLAW_HUNT}.md, docs/team/BUGS.md, this file.
 - **Next:** product-owner, demo sign-off.
+
+## 2026-10-30: Product Owner (demo sign-off, commit c3a93fd)
+- **What I did:**
+  - Checked all 51 SPEC acceptance criteria against the recorded outputs. I read only: results.json, data/marts CSVs, docs/img, evidence, TEST_PLAN, BUGS, validation, DASHBOARD_SPEC, requirements.txt and README.
+  - Result: **49 MET, 2 PARTIAL (AC-9.2, AC-12.2), 0 NOT MET. Verdict: ACCEPTED for demo.**
+  - Wrote 3 interview talking points.
+  - Ran a README overclaim check.
+- **Checks run:** none executed (no pipeline or pytest run, per the EM). The final-run line recorded in results.json is `"245 passed in 356.12s (0:05:56)"`, 0 failed / 0 skipped / 0 error; dbt nodes 145, passed 145, warn 0, failed 0. This was copied from results.json, not from a console.
+- **Files changed:** docs/team/SIGNOFF.md (new), this file.
+- **Open:**
+  - EM: paste the raw pytest/dbt console tail here (AC-12.2).
+  - QA: TEST_PLAN.md is stale (196 passed, dbt 131, old NOT MET/PARTIAL rows).
+  - LIA: full METRICS.md vs SQL formula check (AC-9.2).
+  - README: the clone URL implies a public repo; "CI runs on every push" but CI has never run; Quickstart says "about 5 minutes", but measured install plus tests is about 11 min.
+  - PO: mark SPEC.md final, with INJ-11 required.
+- **Next:** Michael, to approve the push after the README fixes.
+
+## 2026-10-30, Engineering Manager: final run evidence (AC-12.2)
+Command: `.venv\Scripts\python -m pipeline.run --test` (run alone, nothing else using the machine)
+```
+pytest: 245 passed in 356.12s (0:05:56)
+dbt: {'nodes': 145, 'passed': 145, 'warn': 0, 'failed': 0, 'models': 34, 'tests': 111}; tests: 245 passed in 356.12s (0:05:56); done in 376.3 s
+```
+README fixes from SIGNOFF: install time now matches the measured 4.3 min, and CI is described as configured but not yet run. The git clone URL stays because it will resolve once Michael approves the push.
+Still open: refresh TEST_PLAN.md counts (QA); hand-check the other 8 KPI formulas (AC-9.2).

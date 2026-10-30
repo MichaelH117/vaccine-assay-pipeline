@@ -87,7 +87,7 @@ The first complete build passed its own tests. Code review and QA then attacked 
 
 ## Quickstart
 
-About 5 minutes on a laptop: 1-2 min to install, about 15 s to build, about 6 min more if you add the tests.
+About 5 minutes on a laptop: about 4 min to install (measured 4.3 min on a fresh venv), under a minute to build, and about 6 min more if you add the tests.
 Needs **Python 3.13** and nothing else: no database server, no API keys, no network calls at runtime.
 
 **Windows (PowerShell)**
@@ -189,7 +189,7 @@ Dashboard spec: [DASHBOARD_SPEC.md](docs/DASHBOARD_SPEC.md).
 | Repeat-run check | run twice, `sh tools/hash_outputs.sh run1.sha256` after each, then `diff` | 58 of 60 identical (FLAW_HUNT FH-01) |
 | Landing schema drift probe | `PYTHONPATH=. python tools/schema_drift_probe.py` | 3 of 3 drift cases rejected (BUG-011 fixed, re-run 2026-10-30) |
 | Scale probe | `PYTHONPATH=. python tools/scale_probe.py 10 <out_dir>` | clean builds: 1x 14.9 s; 10x (3,600 samples) 50.9 s; 100x (36,000 samples, 573,017 audit rows) 528.2 s; dbt 137 of 137 at each (measured before the BUG-011/012 fixes added 8 tests) |
-| Lint | `python -m ruff check .` | clean; CI runs ruff + pytest on every push ([ci.yml](.github/workflows/ci.yml)) |
+| Lint | `python -m ruff check .` | clean; CI is set up to run ruff + pytest on every push ([ci.yml](.github/workflows/ci.yml)), but has not run on GitHub yet |
 
 ## Senior-scope documents
 
