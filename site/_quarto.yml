@@ -9,6 +9,7 @@ website:
   description: "SYNTHETIC vaccine-trial assay data through a mini-LIMS, 4PL ELISA curves, plate QC and a detection scorecard."
   site-url: "https://michaelh117.github.io/vaccine-assay-pipeline/"
   page-navigation: true
+  favicon: assets/favicon.svg
   bread-crumbs: false
   navbar:
     title: "Vaccine Assay Pipeline"
@@ -30,6 +31,7 @@ website:
         text: How it works
   page-footer:
     left: "SYNTHETIC data only. A portfolio demonstration, not a validated system."
+    center: '<span class="hl-lockup"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M4 12V4H12M52 4H60V12M60 52V60H52M12 60H4V52" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16V48M16 32H36M36 16V48H47" fill="none" stroke="currentColor" stroke-width="6.5" stroke-linecap="square"/><circle class="hl-dot" cx="47" cy="21" r="4.6"/></svg><span>A <b>Hanson Labs</b> project</span></span>'
     right: "Built with Quarto + Observable Plot from `docs/results.json` and `data/marts`."
 
 format:

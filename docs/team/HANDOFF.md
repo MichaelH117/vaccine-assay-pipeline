@@ -392,3 +392,33 @@ Still open: refresh TEST_PLAN.md counts (QA); hand-check the other 8 KPI formula
   - Diff the icons against the official Phosphor SVGs.
   - At 1280x720 the hero now ends at 737 px; all three numbers are still above the fold.
 - **Next:** ux-researcher (re-run the panel and the 5-second test on the new look), then Michael's review.
+
+
+## 2026-10-30, Design Lead: Hanson Labs brand system + vaccine site fixes, not committed
+- **What I did:**
+  - Built the Hanson Labs brand system in `dev-team/brand/` (overnight step 2):
+    - BRAND.md;
+    - base and five sub-theme tokens, plus Streamlit snippets;
+    - a dependency-free wallpaper module with 5 themes;
+    - an original wordmark, monogram and favicon;
+    - a footer lockup.
+  - Vaccine site:
+    - The "rising dots" chart's left margin went from 64 to 86 px. The "100,000" tick now starts 17 px inside the chart;
+      before, it was clipped to "ı00,000".
+    - Added the Hanson Labs favicon and the "A Hanson Labs project" footer lockup to every page.
+    - Removed a stray nested `site/_site/_site` copy. Quarto copies the old `_site` into `_build` when rendering with
+      `--output-dir _build`, so the copy into `_site` now skips `_build/_site`.
+- **Files (vaccine):** site/index.qmd (rise chart margin), site/_quarto.yml (favicon, footer center),
+  site/assets/specimen.css (lockup styles), site/assets/favicon.svg (new), site/_site/* (re-rendered), this file.
+- **Checks:**
+  - `quarto render site --output-dir _build`: 7/7 pages, 0 warnings. Copied into _site; _build deleted.
+  - Headless Chrome (CDP), 5 runs: 0 JS exceptions, 0 OJS errors, page width = viewport at 1440 and 375.
+    - "100,000" left edge is 17 px inside the SVG at 1440 and 375.
+    - The lockup renders at 1440 and 375, and in dark mode with dot rgb(95,211,174).
+    - Favicon is served (HTTP 200).
+- **Open:**
+  - Dark mode only: inline `code` in the footer and honesty notes is purple on grey with low contrast. This predates
+    this change and needs a small theme-dark.scss rule.
+  - The site still uses its own specimen.js, not the shared module. Switching to `brand/wallpaper` is optional and
+    can wait for the consistency review (step 7).
+- **Next:** qa-engineer (overnight step 3), then design-lead step 4 (drug-shortage-console in FORMULARY).

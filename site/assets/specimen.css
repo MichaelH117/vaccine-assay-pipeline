@@ -330,3 +330,11 @@ main.content > :is(p, .lede, ul, ol, dl) { padding-right: max(2rem, calc(100% - 
 @media (min-width: 1400px) { .rail { width: 164px; right: 6px; } .rail a { white-space: normal; font-size: .8rem; } }
 @media (max-width: 767.98px) { main.content > :is(p, .lede, ul, ol, dl) { padding-right: 1rem; } }
 .chain .link .st { display: block; } .chain .link .st svg.ph { margin-right: .25em; }
+
+/* Hanson Labs footer lockup (dev-team/brand/logo/footer-lockup.html). The mark takes the text colour; the dot is the
+   Hanson Labs signal green (4.7:1 on paper, 9.6:1 on the dark background). */
+.hl-lockup { display: inline-flex; align-items: center; gap: .5em; color: var(--ink-2, currentColor); font-weight: 500; white-space: nowrap; }
+.hl-lockup svg { width: 1.6em; height: 1.6em; flex: none; }
+.hl-lockup .hl-dot { fill: #0E7A5F; }
+body.quarto-dark .hl-lockup .hl-dot { fill: #5FD3AE; }
+@media (forced-colors: active) { .hl-lockup .hl-dot { fill: CanvasText; } }

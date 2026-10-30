@@ -222,7 +222,7 @@ riseChart = {
   ];
 
   function build(W, H, stepInit) {
-    const m = {t: 66, r: 14, b: 40, l: 64};
+    const m = {t: 66, r: 14, b: 40, l: 86};   // l: room for "100,000" at the chart font size (was 64 and clipped the leading 1)
     const svg = d3.create("svg").attr("width", W).attr("height", H).attr("class", "rise-svg").attr("role", "img");
     const x = d3.scaleBand().domain(groups).range([m.l, W - m.r]).paddingInner(0.12);
     const y = d3.scaleLog().domain([15, 400000]).range([H - m.b - 6, m.t + 6]).clamp(true);
