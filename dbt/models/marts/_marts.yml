@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: mart_immunogenicity
+    description: "GMT/GMC (AU/mL), GMFR vs baseline and seroresponse by group x visit (US-8). See docs/METRICS.md."
+    config:
+      ci_level: "{{ var('ci_level') }}"
+      seroresponse_fold: "{{ var('seroresponse_fold') }}"
+      assay_lloq_au_ml: "{{ var('assay_lloq_au_ml') }}"
+      baseline_visit: "{{ var('baseline_visit') }}"
+    columns:
+      - name: group_visit_key
+        tests: [unique, not_null]
+      - name: group_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Vaccine', 'Placebo']
+      - name: visit
+        tests: [not_null]
+      - name: n
+        tests: [not_null]
+      - name: gmt
+        tests: [not_null]
+
+  - name: mart_lab_kpis
+    description: "Lab operations KPIs in long format (US-9). See docs/METRICS.md."
+    columns:
+      - name: kpi_id
+        tests: [unique, not_null]
+      - name: kpi_name
+        tests: [not_null]
+      - name: unit
+        tests: [not_null]
+
+  - name: mart_plate_qc
+    description: "One row per plate: status, reject reasons, fit, standards, controls and blanks."
+    columns:
+      - name: plate_id
+        tests: [unique, not_null]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ACCEPTED', 'REJECTED']
+
+  - name: detection_scorecard
+    description: "One row per injected key: detected yes/no and the flag(s) that caught it (US-10)."
+    columns:
+      - name: scorecard_key
+        tests: [unique, not_null]
+      - name: problem_id
+        tests: [not_null]
+      - name: detected
+        tests: [not_null]
+
+  - name: scorecard_false_positives
+    description: "Samples carrying a sample-level flag that no injected problem explains (AC-10.3). One row."
+    columns:
+      - name: samples_total
+        tests: [not_null]
+      - name: samples_with_unexplained_flag
+        tests: [not_null]
+
+  - name: scorecard_expected_flags
+    description: "Accepted flag codes per INJ type (var expected_flags). Shared by the scorecard marts."
+    columns:
+      - name: inj_type
+        tests: [not_null]
+      - name: flag_code
+        tests: [not_null]
+
+  - name: scorecard_summary
+    description: "One-row headline: planted problems (the counting unit) vs keys, required vs optional (US-10)."
+    columns:
+      - name: problems_planted
+        tests: [not_null]
+      - name: headline
+        tests: [not_null]

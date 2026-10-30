@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-30",
+  "command": ".venv/Scripts/python -m pipeline.run (seed 42, no --test), run twice; sh tools/hash_outputs.sh after each",
+  "files_hashed": 60,
+  "files_identical": 58,
+  "files_different": ["data/warehouse/vaccine_assay.duckdb", "data/warehouse/audit_anchor.json"],
+  "results_json_identical_to_previous": true,
+  "db_compare_command": "python tools/compare_duckdb_runs.py runA.duckdb runB.duckdb (two further runs)",
+  "db_tables": 37,
+  "db_tables_identical": 30,
+  "db_tables_run_clock_only": 7,
+  "db_tables_other_differences": 0,
+  "run_clock_tables_columns_excluded_from_compare": {
+    "audit.audit_log": ["old_value", "new_value", "audit_ts_utc", "prev_hash", "row_hash"],
+    "audit.audited_tables": ["registered_at"],
+    "audit.chain_checkpoint": ["head_hash", "created_at_utc"],
+    "audit.chain_verify": ["verified_at"],
+    "audit.file_integrity": ["checked_at"],
+    "audit.record_reconciliation": ["checked_at", "detail"],
+    "lims.raw_files": ["ingested_at"]
+  },
+  "audit_payload_differences": "only the 13 lims.raw_files rows (payload contains ingested_at); same table, key and action at every audit_seq",
+  "build_seconds": [12.3, 10.6, 11.0]
+}

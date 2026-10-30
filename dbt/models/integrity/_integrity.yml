@@ -1,0 +1,55 @@
+version: 2
+
+# Integrity models (owner: GxP seat). Inputs are DE staging models, 1:1 with the Python-written tables and using the
+# DESIGN 3 contract column names: stg_samples, stg_aliquots, stg_custody_events, stg_users, stg_file_integrity.
+# Vars: custody_steps, max_freeze_thaw, late_entry_hours (pipeline.config.dbt_vars).
+
+models:
+  - name: v_custody_status
+    description: "One row per sample: current custody step, custody_complete, missing_steps (AC-2.2)."
+    columns:
+      - name: sample_id
+        tests: [unique, not_null]
+      - name: custody_complete
+        tests: [not_null]
+      - name: missing_steps
+        tests: [not_null]
+
+  - name: custody_flags
+    description: "CUSTODY_GAP, CUSTODY_ORDER, FREEZE_THAW_EXCEEDED (AC-2.3 to AC-2.5). One row per flag_code x key."
+    columns:
+      - name: flag_code
+        tests:
+          - not_null
+          - accepted_values:
+              values: [CUSTODY_GAP, CUSTODY_ORDER, FREEZE_THAW_EXCEEDED]
+      - name: key_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: [sample_id, aliquot_id]
+      - name: key
+        tests: [not_null]
+      - name: detail
+        tests: [not_null]
+
+  - name: alcoa_findings
+    description: "ALCOA+ findings, one row per finding (AC-3.4). finding_id = rule_id:key."
+    columns:
+      - name: finding_id
+        tests: [unique, not_null]
+      - name: rule_id
+        tests:
+          - not_null
+          - accepted_values:
+              values: [ALCOA-A1, ALCOA-A2, ALCOA-C1, ALCOA-O1, ALCOA-O2, ALCOA-CM1]
+      - name: attribute
+        tests:
+          - accepted_values:
+              values: [Attributable, Contemporaneous, Original, Complete]
+      - name: flag_code
+        tests:
+          - accepted_values:
+              values: [NO_PERFORMER, UNKNOWN_USER, LATE_ENTRY, HASH_MISMATCH, RECORD_MISMATCH, CUSTODY_GAP]
+      - name: key
+        tests: [not_null]

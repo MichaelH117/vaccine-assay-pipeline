@@ -1,0 +1,10 @@
+version: 2
+
+# Audit tables read only by the GxP integrity models (owner: GxP seat). A separate source name from DE's `audit`
+# source so the two seats never edit the same file.
+sources:
+  - name: gxp_audit
+    schema: audit
+    tables:
+      - name: record_reconciliation
+        description: "Live base row vs INSERT audit row, written by pipeline.integrity.reconcile_records (BUG-005)."

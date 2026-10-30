@@ -1,0 +1,61 @@
+version: 2
+
+sources:
+  - name: lims
+    schema: lims
+    description: "Mini-LIMS base tables written by pipeline/lims_load.py and ingest.py through the audit API."
+    tables:
+      - name: users
+        description: "Lab users (synthetic labels, never real names)."
+      - name: subjects
+        description: "Trial subjects with randomised group and site."
+      - name: samples
+        description: "Serum samples, one per subject per visit."
+      - name: aliquots
+        description: "Child tubes made from each sample, with freeze-thaw counts."
+      - name: custody_events
+        description: "Chain-of-custody events (collected, received, aliquoted, assayed, stored)."
+      - name: plate_runs
+        description: "ELISA plate runs; repeat_of_plate_id is set on pre-simulated repeat plates."
+      - name: raw_files
+        description: "Raw plate CSVs copied read-only to data/raw/, with the SHA-256 taken at ingestion."
+  - name: assay
+    schema: assay
+    description: "Assay results written by pipeline/ingest.py, curve.py, qc.py, reportable.py."
+    tables:
+      - name: plate_map
+        description: "What each well holds: standard, blank, control or sample (with dilution)."
+      - name: well_reads
+        description: "Parsed OD per well, with blank-corrected OD."
+      - name: ingest_errors
+        description: "Plate files rejected by the parser (wrong shape or non-numeric OD). Not audited."
+      - name: curve_fits
+        description: "4PL fit per plate: parameters, R2, convergence, working range."
+      - name: std_recovery
+        description: "Back-calculated recovery per standard level per plate."
+      - name: control_results
+        description: "Back-calculated high/low control concentrations and limits."
+      - name: sample_results
+        description: "Per plate x sample: mean OD, duplicate CV, range flag, concentration x dilution."
+      - name: qc_flags
+        description: "Every QC flag with rule_id, rule_version, measured value, threshold and blocking."
+      - name: plate_status
+        description: "ACCEPTED or REJECTED per plate, with the plate-level rule codes."
+      - name: reportable_selection
+        description: "Reportable-run decision per LIMS sample, with the audited reason."
+  - name: audit
+    schema: audit
+    description: "Audit trail and integrity check results (GxP seat: pipeline/audit.py, integrity.py)."
+    tables:
+      - name: audit_log
+        description: "Append-only audit trail with a SHA-256 hash chain."
+      - name: chain_verify
+        description: "Result of each hash-chain verification run."
+      - name: file_integrity
+        description: "Re-hash of each raw plate file vs the SHA-256 stored at ingestion."
+  - name: truth
+    schema: truth
+    description: "The generator's answer key. Only marts.detection_scorecard and tests may read it."
+    tables:
+      - name: injected_problems
+        description: "One row per key affected by a planted problem (INJ-1 to INJ-10)."

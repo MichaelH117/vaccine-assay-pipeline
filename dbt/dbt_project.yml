@@ -1,0 +1,27 @@
+name: vaccine_assay_pipeline
+version: "0.1.0"
+config-version: 2
+profile: vaccine_assay_pipeline
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: target
+
+# No threshold lives here. Every var (rule_version, assay_lloq_au_ml, custody_steps, expected_flags, ...) comes from
+# config/qc_rules.yaml through pipeline.config.dbt_vars(); `python -m pipeline.run` passes them as --vars (ADR 005).
+
+models:
+  vaccine_assay_pipeline:
+    staging:
+      +schema: staging
+      +materialized: view
+    integrity:
+      +schema: integrity
+      +materialized: table
+    core:
+      +schema: core
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table

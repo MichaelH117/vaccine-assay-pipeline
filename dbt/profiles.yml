@@ -1,0 +1,8 @@
+# In-repo profile: run with --profiles-dir dbt. VAP_DB_PATH (absolute) wins; `python -m pipeline.run` sets it.
+vaccine_assay_pipeline:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "{{ env_var('VAP_DB_PATH', 'data/warehouse/vaccine_assay.duckdb') }}"
+      threads: 4

@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: fct_reportable_result
+    description: >
+      Exactly one reportable ELISA IgG result per sample (AC-7.1), from the run chosen by pipeline/reportable.py
+      (latest valid run: ACCEPTED plate, no blocking flag; ADR 006). reported_value is '<LLOQ' or the concentration as
+      text; analysis_value_au_ml imputes lloq_impute_factor x assay LLOQ for <LLOQ results (ADR 003, AC-7.3).
+    columns:
+      - name: sample_id
+        description: Sample (SMP-NNNNN). One row per sample.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_samples')
+                field: sample_id
+      - name: subject_id
+        data_tests: [not_null]
+      - name: group_name
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Vaccine', 'Placebo']
+      - name: visit
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['D1', 'D29', 'D57']
+      - name: result_id
+        description: plate_id:sample_id of the chosen run.
+        data_tests: [unique, not_null]
+      - name: plate_id
+        data_tests: [not_null]
+      - name: reported_value
+        description: "'<LLOQ' or the concentration in AU/mL (dilution applied) as text."
+        data_tests: [not_null]
+      - name: conc_au_ml
+        description: Back-calculated concentration x dilution; null when below LLOQ.
+      - name: analysis_value_au_ml
+        description: Value used for GMT/GMFR; lloq_impute_factor x assay_lloq_au_ml when below LLOQ.
+        data_tests: [not_null]
+      - name: below_lloq
+        data_tests: [not_null]
+      - name: selection_reason
+        description: "The audited reason from assay.reportable_selection, e.g. latest valid run of 2; PLATE-003 rejected (CTRL_OOR)."
+
+  - name: missing_results
+    description: >
+      Every LIMS sample that has no reportable result, with a reason code, so nothing is dropped silently (AC-7.4).
+      A sample is in fct_reportable_result or here, never both.
+    columns:
+      - name: sample_id
+        data_tests: [unique, not_null]
+      - name: reason
+        description: NOT_ASSAYED, ID_MISMATCH_UNRESOLVED, REASSAY_PENDING (DUP_CV or ABOVE_ULOQ, no later valid run), PLATE_INGEST_ERROR (the plate file could not be read), or PLATE_REJECTED.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['NOT_ASSAYED', 'ID_MISMATCH_UNRESOLVED', 'REASSAY_PENDING', 'PLATE_INGEST_ERROR', 'PLATE_REJECTED']
+      - name: detail
+        description: The selection reason text from assay.reportable_selection.
+
+  - name: reassay_list
+    description: >
+      Re-assay requests, one row per sample x plate (AC-6.2, AC-6.4): ABOVE_ULOQ with a suggested dilution of
+      dilution x reassay_dilution_factor (also for a >ULOQ read on a rejected plate), DUP_CV at the same dilution,
+      and every sample mapped to a REJECTED plate, including one rejected with INGEST_ERROR.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "sample_id || '|' || plate_id"
+    columns:
+      - name: sample_id
+        data_tests: [not_null]
+      - name: plate_id
+        data_tests: [not_null]
+      - name: rule_id
+        description: Comma list of ABOVE_ULOQ, DUP_CV, PLATE_REJECTED.
+        data_tests: [not_null]
+      - name: suggested_dilution
+        data_tests: [not_null]
+      - name: resolved
+        description: True when the sample later got a reportable result from a different plate.
+        data_tests: [not_null]

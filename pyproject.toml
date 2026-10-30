@@ -1,0 +1,17 @@
+[project]
+name = "vaccine-assay-pipeline"
+version = "0.1.0"
+description = "Synthetic vaccine-trial ELISA assay pipeline: mini-LIMS with an append-only audit trail, 4PL curves, QC, dbt marts."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["dbt/target"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

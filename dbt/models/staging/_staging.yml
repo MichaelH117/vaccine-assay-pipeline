@@ -1,0 +1,136 @@
+version: 2
+
+models:
+  - name: stg_users
+    description: "1:1 typed view of lims.users. Lab users (synthetic labels, never real names)."
+    columns:
+      - name: user_id
+        data_tests: [unique, not_null]
+      - name: role
+        data_tests: [not_null]   # BUG-011
+  - name: stg_subjects
+    description: "1:1 typed view of lims.subjects. Trial subjects with randomised group and site."
+    columns:
+      - name: subject_id
+        data_tests: [unique, not_null]
+      - name: group_name
+        data_tests: [not_null]   # BUG-011
+      - name: site_id
+        data_tests: [not_null]   # BUG-011
+  - name: stg_samples
+    description: "1:1 typed view of lims.samples. Serum samples, one per subject per visit."
+    columns:
+      - name: sample_id
+        data_tests: [unique, not_null]
+  - name: stg_aliquots
+    description: "1:1 typed view of lims.aliquots. Child tubes made from each sample, with freeze-thaw counts."
+    columns:
+      - name: aliquot_id
+        data_tests: [unique, not_null]
+  - name: stg_custody_events
+    description: "1:1 typed view of lims.custody_events. Chain-of-custody events (collected, received, aliquoted, assayed, stored)."
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: sample_id
+        data_tests: [not_null]   # BUG-011
+      - name: step
+        data_tests: [not_null]   # BUG-011
+      - name: performed_at
+        data_tests: [not_null]   # BUG-011
+      - name: recorded_at
+        data_tests: [not_null]   # BUG-011
+      - name: location
+        data_tests: [not_null]   # BUG-011
+  - name: stg_plate_runs
+    description: "1:1 typed view of lims.plate_runs. ELISA plate runs; repeat_of_plate_id is set on pre-simulated repeat plates."
+    columns:
+      - name: plate_id
+        data_tests: [unique, not_null]
+  - name: stg_raw_files
+    description: "1:1 typed view of lims.raw_files. Raw plate CSVs copied read-only to data/raw/, with the SHA-256 taken at ingestion."
+    columns:
+      - name: file_name
+        data_tests: [unique, not_null]
+  - name: stg_plate_map
+    description: "1:1 typed view of assay.plate_map. What each well holds: standard, blank, control or sample (with dilution)."
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "plate_id || '|' || well"
+    columns:
+      - name: plate_id
+        data_tests: [not_null]
+      - name: well
+        data_tests: [not_null]
+  - name: stg_well_reads
+    description: "1:1 typed view of assay.well_reads. Parsed OD per well, with blank-corrected OD."
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "plate_id || '|' || well"
+    columns:
+      - name: plate_id
+        data_tests: [not_null]
+      - name: well
+        data_tests: [not_null]
+  - name: stg_ingest_errors
+    description: "1:1 typed view of assay.ingest_errors. Plate files rejected by the parser (wrong shape or non-numeric OD). Not audited."
+  - name: stg_curve_fits
+    description: "1:1 typed view of assay.curve_fits. 4PL fit per plate: parameters, R2, convergence, working range."
+    columns:
+      - name: plate_id
+        data_tests: [unique, not_null]
+  - name: stg_std_recovery
+    description: "1:1 typed view of assay.std_recovery. Back-calculated recovery per standard level per plate."
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "plate_id || '|' || level"
+    columns:
+      - name: plate_id
+        data_tests: [not_null]
+      - name: level
+        data_tests: [not_null]
+  - name: stg_control_results
+    description: "1:1 typed view of assay.control_results. Back-calculated high/low control concentrations and limits."
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "plate_id || '|' || ctrl_level"
+    columns:
+      - name: plate_id
+        data_tests: [not_null]
+      - name: ctrl_level
+        data_tests: [not_null]
+  - name: stg_sample_results
+    description: "1:1 typed view of assay.sample_results. Per plate x sample: mean OD, duplicate CV, range flag, concentration x dilution."
+    columns:
+      - name: result_id
+        data_tests: [unique, not_null]
+  - name: stg_qc_flags
+    description: "1:1 typed view of assay.qc_flags. Every QC flag with rule_id, rule_version, measured value, threshold and blocking."
+    columns:
+      - name: flag_id
+        data_tests: [unique, not_null]
+  - name: stg_plate_status
+    description: "1:1 typed view of assay.plate_status. ACCEPTED or REJECTED per plate, with the plate-level rule codes."
+    columns:
+      - name: plate_id
+        data_tests: [unique, not_null]
+  - name: stg_reportable_selection
+    description: "1:1 typed view of assay.reportable_selection. Reportable-run decision per LIMS sample, with the audited reason."
+    columns:
+      - name: sample_id
+        data_tests: [unique, not_null]
+  - name: stg_audit_log
+    description: "1:1 typed view of audit.audit_log. Append-only audit trail with a SHA-256 hash chain."
+    columns:
+      - name: audit_seq
+        data_tests: [unique, not_null]
+  - name: stg_chain_verify
+    description: "1:1 typed view of audit.chain_verify. Result of each hash-chain verification run."
+  - name: stg_file_integrity
+    description: "1:1 typed view of audit.file_integrity. Re-hash of each raw plate file vs the SHA-256 stored at ingestion."
+  - name: stg_injected_problems
+    description: "1:1 typed view of truth.injected_problems. One row per key affected by a planted problem (INJ-1 to INJ-10)."

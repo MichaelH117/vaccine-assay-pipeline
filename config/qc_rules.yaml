@@ -1,0 +1,53 @@
+# Single source of every threshold (ADR 005). Python reads it directly; keys marked (dbt) are passed to
+# `dbt build --vars` by pipeline.config.dbt_vars(). Demo defaults from SPEC section 4: UNVERIFIED against ICH M10.
+# Values change only through a TL-reviewed PR.
+version: "QC-RULES-1.0"           # (dbt) stamped on every qc_flags row as rule_version
+assay:
+  name: "Anti-Antigen X IgG ELISA (synthetic)"
+  unit: "AU/mL"
+  std_levels_au_ml: [1000, 333.3, 111.1, 37.04, 12.35, 4.115, 1.372, 0.4572]
+  default_dilution: 100
+  reassay_dilution_factor: 10      # ABOVE_ULOQ suggestion = dilution x 10
+  assay_lloq_au_ml: 45.72          # (dbt) lowest standard x default dilution; used for reporting (ADR 003)
+  lloq_impute_factor: 0.5          # (dbt)
+fit:
+  maxfev: 10000
+  min_r_squared: 0.98              # FIT_FAIL
+  recovery_low_pct: 80
+  recovery_high_pct: 120
+  min_std_pass_fraction: 0.75      # STD_RECOVERY
+controls:
+  HIGH: {target_au_ml: 300.0, tolerance_pct: 20}   # CTRL_OOR on back-calculated conc (curve units)
+  LOW:  {target_au_ml: 10.0,  tolerance_pct: 20}
+plate:
+  max_mean_blank_od: 0.15          # BLANK_HIGH
+  min_raw_od: 0.0                  # parser rejects a raw OD outside this reader range as a corrupt export (BUG-002)
+  max_raw_od: 4.5                  #   demo default; TL to confirm against the reader's spec
+sample:
+  max_dup_cv_pct: 20               # DUP_CV, on blank-corrected OD (ADR 004)
+custody:
+  steps: [collected, received, aliquoted, assayed, stored]   # (dbt)
+  max_freeze_thaw: 2               # (dbt)
+alcoa:
+  late_entry_hours: 24             # (dbt)
+immunogenicity:
+  seroresponse_fold: 4             # (dbt)
+  ci_level: 0.95                   # (dbt)
+  baseline_visit: "D1"             # (dbt)
+scorecard:
+  max_unexplained_flag_pct: 5
+  required_inj_types: [INJ-1, INJ-2, INJ-3, INJ-4, INJ-5, INJ-6, INJ-7, INJ-8, INJ-11]   # (dbt) must reach 100% recall
+  masking_flags:                   # (dbt) a key carrying one of these is not credited to that INJ type (review F3)
+    INJ-5: [FIT_FAIL, STD_RECOVERY]
+  expected_flags:                  # (dbt)
+    INJ-1: [FIT_FAIL, STD_RECOVERY]
+    INJ-2: [ID_MISMATCH]
+    INJ-3: [CUSTODY_GAP]
+    INJ-4: [LATE_ENTRY]
+    INJ-5: [CTRL_OOR]
+    INJ-6: [DUP_CV]
+    INJ-7: [AUDIT_CHAIN_BROKEN]
+    INJ-8: [ABOVE_ULOQ]
+    INJ-9: [FREEZE_THAW_EXCEEDED]
+    INJ-10: [NO_PERFORMER]
+    INJ-11: [RECORD_MISMATCH]
