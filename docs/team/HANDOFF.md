@@ -422,3 +422,10 @@ Still open: refresh TEST_PLAN.md counts (QA); hand-check the other 8 KPI formula
   - The site still uses its own specimen.js, not the shared module. Switching to `brand/wallpaper` is optional and
     can wait for the consistency review (step 7).
 - **Next:** qa-engineer (overnight step 3), then design-lead step 4 (drug-shortage-console in FORMULARY).
+
+## 2026-10-30, Data Engineer: pytest run must fail loudly when it did not run cleanly
+- Did: run_pytest now records `ok` and `returncode`. ok is False on any error (e.g. a collection error), an exit code other than 0/1 (2 interrupted, 5 no tests ran), or no summary line. New check_tests() exits non-zero with "pytest did not run cleanly (N errors, exit code X: ...)", and the README row says DID NOT RUN CLEANLY instead of "0 passed, 0 failed".
+- Files: pipeline/run.py, tests/test_run_pytest.py (new).
+- Checks: new test file FAILED against the old run.py (3 of 4 tests, e.g. "a suite that never ran was recorded as ok: {... 'error': 1 ...}"), 4 passed with the fix. Quick subset `pytest -x -q` on test_run_pytest, test_curve, test_stats, test_generator, test_ingest: 61 passed. Full pipeline and full suite NOT run (RAM brief).
+- Open: README/results.json pytest row is unchanged until the next `pipeline.run --test`.
+- Next: QA Engineer.

@@ -156,8 +156,23 @@ def run_pytest() -> dict:
     tail = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
     counts = {k: int(m.group(1)) if (m := re.search(rf"(\d+) {k}", tail)) else 0
               for k in ("passed", "failed", "skipped", "error")}
-    print("pytest:", tail)
-    return {**counts, "summary": tail, "date": time.strftime("%Y-%m-%d")}
+    # ok is False when the suite did not run cleanly: any error (e.g. a collection error), an exit code other than
+    # 0 (all passed) or 1 (some failed), or no summary line. Otherwise a suite that never ran reads "0 failed".
+    ok = bool(tail) and counts["error"] == 0 and proc.returncode in (0, 1)
+    if not ok:
+        print(proc.stdout[-3000:], proc.stderr[-2000:], sep="\n")
+    print("pytest:", tail or "no pytest summary line")
+    return {**counts, "returncode": proc.returncode, "ok": ok, "summary": tail or "no pytest summary line",
+            "date": time.strftime("%Y-%m-%d")}
+
+
+def check_tests(tests: dict | None) -> None:
+    """Exit non-zero, with a clear message, when the recorded pytest run failed or did not run cleanly."""
+    if tests and tests.get("ok") is False:
+        raise SystemExit(f"pytest did not run cleanly ({tests['error']} errors, exit code {tests['returncode']}: "
+                         f"{tests['summary']}); README marks the result as not valid")
+    if tests and (tests["failed"] or tests["error"]):
+        raise SystemExit(1)
 
 
 def summarize(con) -> dict:
@@ -214,7 +229,10 @@ def write_readme_results(r: dict) -> None:
         lines.append(f"| Unexplained sample-flag rate | **{fp_txt}%** |")
     lines.append(f"| Audit hash chain | **{'OK' if s['chain_ok'] else 'BROKEN (INJ-7 caught)'}** |")
     lines.append(f"| dbt build | **{d['passed']} of {d['nodes']} passed**, {d['failed']} failed |")
-    if t:
+    if t and t.get("ok") is False:
+        lines.append(f"| pytest | **DID NOT RUN CLEANLY**: {t['error']} errors, exit code {t.get('returncode', '?')} "
+                     f"({t['summary']}); counts are not valid ({t['date']}) |")
+    elif t:
         lines.append(f"| pytest | **{t['passed']} passed**, {t['failed']} failed ({t['date']}) |")
     note = (f"\nNumbers from `python -m pipeline.run --seed {r['seed']}`, stored in "
             "[docs/results.json](docs/results.json). Synthetic data only.\n")
@@ -260,8 +278,7 @@ def main() -> None:
     write_readme_results(results)
     print(json.dumps({k: v for k, v in summary.items() if k not in ("scorecard", "immunogenicity")}, default=str))
     print(f"dbt: {dbt}; tests: {tests and tests['summary']}; done in {time.perf_counter() - t0:.1f} s")
-    if tests and (tests["failed"] or tests["error"]):
-        raise SystemExit(1)
+    check_tests(tests)
 
 
 if __name__ == "__main__":
